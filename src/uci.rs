@@ -26,12 +26,13 @@ impl Command {
 
     fn validate_input_string(input: &str) -> Result<Vec<String>, &str> {
         // Turn the input into an str of space-separated words
-        let input = input.split_whitespace().collect::<Vec<&str>>().join(" ");
+        let input = input.trim();
 
         // Match the input against the UCI
         let uci_regex_set =
             RegexSet::new(&[
                 r"^(uci|isready|ucinewgame|stop|ponderhit|quit)$",
+                r"^debug (on|off)$",
                 r"^position (startpos|([rnbqkp12345678RNBQKP]{1,8}/){7}[rnbqkp12345678RNBQKP]{1,8} (w|b) (-|[KQkq]{1,4}) (-|[a-h][1-8]) (\\d)+ (\\d)+)( moves( [a-h][1-8][a-h][1-8][rnbqRNBQ]?)+)?$",
                 r"^go( ponder| infinite| (wtime|btime|winc|binc|movestogo|depth|nodes|mate|movetime) [\\d]+| searchmoves( [a-h][1-8][a-h][1-8][rnbqRNBQ]?)+)*$",
                 r"^setoption [\\w]+( value [\\w]+)?$"
@@ -79,13 +80,13 @@ mod tests {
         };
     }
 
-    // Valid UCI commands
+    // Valid uci
     test_valid_command!(valid_uci_1, "uci", vec!["uci"]);
     test_valid_command!(valid_uci_2, "\nuci", vec!["uci"]);
     test_valid_command!(valid_uci_3, "\tuci", vec!["uci"]);
     test_valid_command!(valid_uci_4, "\n\t   uci\n\n\t\t\n ", vec!["uci"]);
 
-    // Invalid UCI commands
+    // Invalid uci
     test_invalid_command!(invalid_uci_1, "ci");
     test_invalid_command!(invalid_uci_2, "uuci");
     test_invalid_command!(invalid_uci_3, "ucii");
@@ -99,4 +100,46 @@ mod tests {
     test_invalid_command!(invalid_uci_11, "$uci");
     test_invalid_command!(invalid_uci_12, "^uci");
     test_invalid_command!(invalid_uci_13, "^uci");
+
+    // Valid debug
+    test_valid_command!(valid_debug_1, "debug on", vec!["debug", "on"]);
+    test_valid_command!(valid_debug_2, "debug off", vec!["debug", "off"]);
+
+    // Invalid debug
+    test_invalid_command!(invalid_debug_1, "ddebug on");
+    test_invalid_command!(invalid_debug_2, "debug o");
+    test_invalid_command!(invalid_debug_3, "debug onn");
+    test_invalid_command!(invalid_debug_4, "ebug on");
+    test_invalid_command!(invalid_debug_5, "debug");
+    test_invalid_command!(invalid_debug_6, "debug on off");
+    test_invalid_command!(invalid_debug_7, "debug off on");
+    test_invalid_command!(invalid_debug_8, "debug onoff");
+    test_invalid_command!(invalid_debug_9, "asdf");
+    test_invalid_command!(invalid_debug_10, "asdf debug on");
+    test_invalid_command!(invalid_debug_11, "debug on asdf");
+    test_invalid_command!(invalid_debug_12, "d\nebug on");
+    test_invalid_command!(invalid_debug_13, "^debug on");
+    test_invalid_command!(invalid_debug_14, "debug off$");
+    test_invalid_command!(invalid_debug_15, "debug\noff");
+
+    // Valid isready
+    // Invalid isready
+
+    // Valid setoption
+    // Invalid setoption
+
+    // Valid ucinewgame
+    // Invalid ucinewgame
+
+    // Valid position
+    // Invalid position
+
+    // Valid go
+    // Invalid go
+
+    // Valid stop
+    // Invalid stop
+
+    // Valid ponderhit
+    // Invalid ponderhit
 }
