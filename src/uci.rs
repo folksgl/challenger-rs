@@ -33,7 +33,7 @@ impl Command {
             RegexSet::new(&[
                 r"^(uci|isready|ucinewgame|stop|ponderhit|quit)$",
                 r"^debug (on|off)$",
-                r"^position (startpos|([rnbqkp12345678RNBQKP]{1,8}/){7}[rnbqkp12345678RNBQKP]{1,8} (w|b) (-|[KQkq]{1,4}) (-|[a-h][1-8]) (\\d)+ (\\d)+)( moves( [a-h][1-8][a-h][1-8][rnbqRNBQ]?)+)?$",
+                r"^position (startpos|([rnbqkp12345678RNBQKP]{1,8}/){7}[rnbqkp12345678RNBQKP]{1,8} (w|b) (-|[KQkq]{1,4}) (-|[a-h][1-8]) (\d)+ (\d)+)( moves( [a-h][1-8][a-h][1-8][rnbqRNBQ]?)+)?$",
                 r"^go( ponder| infinite| (wtime|btime|winc|binc|movestogo|depth|nodes|mate|movetime) [\\d]+| searchmoves( [a-h][1-8][a-h][1-8][rnbqRNBQ]?)+)*$",
                 r"^setoption [[:word:]]+( value [[:word:]]+)?$"
             ]).unwrap();
@@ -52,18 +52,13 @@ mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;
 
-    fn validate_string(input: &str) -> Vec<String> {
-        return Command::validate_input_string(input).unwrap();
-    }
-
     // Macro for defining tests that validate good input strings against a known
     // set of tokens that should be returned by that input.
     macro_rules! test_valid_command {
-        ($test_name:ident, $input_str:literal, $expected:expr) => {
+        ($test_name:ident, $input_str:literal) => {
             #[test]
             fn $test_name() {
-                let result = validate_string($input_str);
-                assert_eq!(result, $expected);
+                assert!(Command::validate_input_string($input_str).is_ok());
             }
         };
     }
@@ -73,18 +68,17 @@ mod tests {
     macro_rules! test_invalid_command {
         ($test_name:ident, $input_str:literal) => {
             #[test]
-            #[should_panic]
             fn $test_name() {
-                let _result = validate_string($input_str);
+                assert!(Command::validate_input_string($input_str).is_err());
             }
         };
     }
 
     // Valid uci
-    test_valid_command!(valid_uci_1, "uci", vec!["uci"]);
-    test_valid_command!(valid_uci_2, "\nuci", vec!["uci"]);
-    test_valid_command!(valid_uci_3, "\tuci", vec!["uci"]);
-    test_valid_command!(valid_uci_4, "\n\t   uci\n\n\t\t\n ", vec!["uci"]);
+    test_valid_command!(valid_uci_1, "uci");
+    test_valid_command!(valid_uci_2, "\nuci");
+    test_valid_command!(valid_uci_3, "\tuci");
+    test_valid_command!(valid_uci_4, "\n\t   uci\n\n\t\t\n ");
 
     // Invalid uci
     test_invalid_command!(invalid_uci_1, "ci");
@@ -102,8 +96,8 @@ mod tests {
     test_invalid_command!(invalid_uci_13, "^uci");
 
     // Valid debug
-    test_valid_command!(valid_debug_1, "debug on", vec!["debug", "on"]);
-    test_valid_command!(valid_debug_2, "debug off", vec!["debug", "off"]);
+    test_valid_command!(valid_debug_1, "debug on");
+    test_valid_command!(valid_debug_2, "debug off");
 
     // Invalid debug
     test_invalid_command!(invalid_debug_1, "ddebug on");
@@ -123,7 +117,7 @@ mod tests {
     test_invalid_command!(invalid_debug_15, "debug\noff");
 
     // Valid isready
-    test_valid_command!(valid_isready_1, "isready", vec!["isready"]);
+    test_valid_command!(valid_isready_1, "isready");
 
     // Invalid isready
     test_invalid_command!(invalid_isready_1, "iisready");
@@ -142,26 +136,10 @@ mod tests {
     test_invalid_command!(invalid_isready_14, "isready\nisready");
 
     // Valid setoption
-    test_valid_command!(
-        valid_setoption_1,
-        "setoption name value x",
-        vec!["setoption", "name", "value", "x"]
-    );
-    test_valid_command!(
-        valid_setoption_2,
-        "setoption name value 1",
-        vec!["setoption", "name", "value", "1"]
-    );
-    test_valid_command!(
-        valid_setoption_3,
-        "setoption asdf_1234",
-        vec!["setoption", "asdf_1234"]
-    );
-    test_valid_command!(
-        valid_setoption_4,
-        "setoption asdf_1234 value asdf_1234",
-        vec!["setoption", "asdf_1234", "value", "asdf_1234"]
-    );
+    test_valid_command!(valid_setoption_1, "setoption name value x");
+    test_valid_command!(valid_setoption_2, "setoption name value 1");
+    test_valid_command!(valid_setoption_3, "setoption asdf_1234");
+    test_valid_command!(valid_setoption_4, "setoption asdf_1234 value asdf_1234");
 
     // Invalid setoption
     test_invalid_command!(invalid_setoption_1, "isetoption");
@@ -175,7 +153,7 @@ mod tests {
     test_invalid_command!(invalid_setoption_9, "setoption\n name value x");
 
     // Valid ucinewgame
-    test_valid_command!(valid_ucinewgame_1, "ucinewgame", vec!["ucinewgame"]);
+    test_valid_command!(valid_ucinewgame_1, "ucinewgame");
 
     // Invalid ucinewgame
     test_invalid_command!(invalid_ucinewgame_1, "uucinewgame");
@@ -191,17 +169,123 @@ mod tests {
     test_invalid_command!(invalid_ucinewgame_11, "ucinewgame$");
 
     // Valid position
+    test_valid_command!(valid_position_1, "position startpos");
+    test_valid_command!(valid_position_2, "position 8/8/8/8/8/8/8/8 w KQkq - 0 1");
+    test_valid_command!(
+        valid_position_3,
+        "position rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+    );
+    test_valid_command!(
+        valid_position_4,
+        "position rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
+    );
+    test_valid_command!(
+        valid_position_5,
+        "position rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2"
+    );
+    test_valid_command!(
+        valid_position_6,
+        "position rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2"
+    );
+    test_valid_command!(
+        valid_position_7,
+        "position rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq a1 1 2"
+    );
+    test_valid_command!(
+        valid_position_8,
+        "position rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b Qkq a1 1 2"
+    );
+    test_valid_command!(
+        valid_position_9,
+        "position rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b kq a1 1 2"
+    );
+    test_valid_command!(
+        valid_position_10,
+        "position rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b q a1 1 2"
+    );
+    test_valid_command!(
+        valid_position_11,
+        "position rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b - a1 1 2"
+    );
+    test_valid_command!(valid_position_12, "position rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1234567890987654321 2234567890987654321");
+    test_valid_command!(valid_position_13, "position startpos moves a1a2");
+    test_valid_command!(valid_position_14, "position startpos moves a1a2 b2b2");
+    test_valid_command!(valid_position_15, "position startpos moves a1a2 b2b2 c3c3");
+    test_valid_command!(
+        valid_position_16,
+        "position startpos moves a1a2 b2b2 c3c3 d4d4"
+    );
+    test_valid_command!(
+        valid_position_17,
+        "position startpos moves a1a2 b2b2 c3c3 d4d4q"
+    );
+    test_valid_command!(
+        valid_position_18,
+        "position startpos moves a1a2 b2b2 c3c3 d4d4Q"
+    );
+    test_valid_command!(
+        valid_position_19,
+        "position 8/8/8/8/8/8/8/8 w KQkq - 0 1 moves e1e2"
+    );
+    test_valid_command!(
+        valid_position_20,
+        "position 8/8/8/8/8/8/8/8 w KQkq - 0 1 moves f1e8 d5f8"
+    );
+    test_valid_command!(
+        valid_position_21,
+        "position 8/8/8/8/8/8/8/8 w KQkq - 0 1 moves g1e6 d5f8"
+    );
+    test_valid_command!(
+        valid_position_22,
+        "position 8/8/8/8/8/8/8/8 w KQkq - 0 1 moves h1e8 d5f8q"
+    );
+    test_valid_command!(
+        valid_position_23,
+        "position 8/8/8/8/8/8/8/8 w KQkq - 0 1 moves e1e5 d5f8Q"
+    );
+    test_valid_command!(
+        valid_position_24,
+        "position 8/8/8/8/8/8/8/8 w KQkq - 0 1 moves e1e7 d5f8n"
+    );
+    test_valid_command!(
+        valid_position_25,
+        "position 8/8/8/8/8/8/8/8 w KQkq - 0 1 moves e1e7 d5f8N"
+    );
+    test_valid_command!(
+        valid_position_26,
+        "position 8/8/8/8/8/8/8/8 w KQkq - 0 1 moves e1e7 d5f8r"
+    );
+    test_valid_command!(
+        valid_position_27,
+        "position 8/8/8/8/8/8/8/8 w KQkq - 0 1 moves e1e7 d5f8R"
+    );
+    test_valid_command!(
+        valid_position_28,
+        "position 8/8/8/8/8/8/8/8 w KQkq - 0 1 moves e1e7 d5f8b"
+    );
+    test_valid_command!(
+        valid_position_29,
+        "position 8/8/8/8/8/8/8/8 w KQkq - 0 1 moves e1e7 d5f8B"
+    );
+    test_valid_command!(
+        valid_position_30,
+        "position 8/8/8/8/8/8/8/8 w KQkq - 0 1 moves d5f8B"
+    );
     // Invalid position
+    //test_invalid_command!(invalid__1, "");
 
     // Valid go
     //test_valid_command!(valid__1, "", vec![""]);
     // Invalid go
+    //test_invalid_command!(invalid__1, "");
 
     // Valid stop
     //test_valid_command!(valid__1, "", vec![""]);
     // Invalid stop
+    //test_invalid_command!(invalid__1, "");
 
     // Valid ponderhit
     //test_valid_command!(valid__1, "", vec![""]);
     // Invalid ponderhit
+    //test_invalid_command!(invalid__1, "");
 }
