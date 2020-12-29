@@ -34,7 +34,7 @@ impl Command {
                 r"^(?:uci|isready|ucinewgame|stop|ponderhit)$",
                 r"^debug (?:on|off)$",
                 r"^position (?:startpos|(?:[rnbqkp12345678RNBQKP]{1,8}/){7}[rnbqkp12345678RNBQKP]{1,8} (w|b) (?:-|[KQkq]{1,4}) (?:-|[a-h][1-8]) (?:\d)+ (?:\d)+)(?: moves(?: [a-h][1-8][a-h][1-8][rnbqRNBQ]?)+)?$",
-                r"^go(?: ponder| infinite| (?:wtime|btime|winc|binc|movestogo|depth|nodes|mate|movetime) [\\d]+| searchmoves(?: [a-h][1-8][a-h][1-8][rnbqRNBQ]?)+)*$",
+                r"^go(?: ponder| infinite| (?:wtime|btime|winc|binc|movestogo|depth|nodes|mate|movetime) [\d]+| searchmoves(?: [a-h][1-8][a-h][1-8][rnbqRNBQ]?)+)*$",
                 r"^setoption [[:word:]]+(?: value [[:word:]]+)?$"
             ]).unwrap();
 
@@ -347,17 +347,38 @@ mod tests {
     );
 
     // Valid go
-    //test_valid_command!(valid__1, "", vec![""]);
+    test_valid_command!(valid_go_1, "go");
+    test_valid_command!(valid_go_2, "go depth 1");
+    test_valid_command!(valid_go_3, "go depth 1234567890");
+    test_valid_command!(valid_go_4, "go depth 1 ponder");
+    test_valid_command!(valid_go_5, "go depth 3 wtime 4");
+    test_valid_command!(valid_go_6, "go nodes 7");
+    test_valid_command!(valid_go_7, "go mate 09");
+    test_valid_command!(valid_go_8, "go infinite searchmoves a1a2 a2a4q");
     // Invalid go
-    //test_invalid_command!(invalid__1, "");
+    test_invalid_command!(invalid_go_1, "ugo");
+    test_invalid_command!(invalid_go_2, "gon");
+    test_invalid_command!(invalid_go_3, "g\no");
+    test_invalid_command!(invalid_go_4, "g o");
+    test_invalid_command!(invalid_go_5, "\n\n");
+    test_invalid_command!(invalid_go_6, "o");
+    test_invalid_command!(invalid_go_7, "g");
+    test_invalid_command!(invalid_go_8, "go depth");
+    test_invalid_command!(invalid_go_9, "go depth infinite");
+    test_invalid_command!(invalid_go_10, "go depth a");
+    test_invalid_command!(invalid_go_11, "go winc");
+    test_invalid_command!(invalid_go_12, "go winc p");
+    test_invalid_command!(invalid_go_13, "go movestogo");
+    test_invalid_command!(invalid_go_14, "go winc binc 4");
+    test_invalid_command!(invalid_go_15, "go inc 4");
 
     // Valid stop
-    //test_valid_command!(valid__1, "", vec![""]);
+    //test_valid_command!(valid__1, "");
     // Invalid stop
     //test_invalid_command!(invalid__1, "");
 
     // Valid ponderhit
-    //test_valid_command!(valid__1, "", vec![""]);
+    //test_valid_command!(valid__1, "");
     // Invalid ponderhit
     //test_invalid_command!(invalid__1, "");
 }
