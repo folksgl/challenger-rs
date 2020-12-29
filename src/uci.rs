@@ -412,4 +412,82 @@ mod tests {
     test_invalid_command!(invalid_ponderhit_13, "^ponderhit");
     test_invalid_command!(invalid_ponderhit_14, "ponderhit$");
     test_invalid_command!(invalid_ponderhit_15, "ponderhit\nisready");
+
+    // Test command creation (does Command::tokens get properly populated)
+    macro_rules! test_command_tokens {
+        ($test_name:ident, $input_str:literal, $expected:expr) => {
+            #[test]
+            fn $test_name() {
+                let tokens = Command::from($input_str).unwrap().tokens;
+                assert_eq!(tokens, $expected);
+            }
+        };
+    }
+
+    test_command_tokens!(uci_tokens, "uci", vec!["uci"]);
+    test_command_tokens!(isready_tokens, "isready", vec!["isready"]);
+    test_command_tokens!(ucinewgame_tokens, "ucinewgame", vec!["ucinewgame"]);
+    test_command_tokens!(stop_tokens, "stop", vec!["stop"]);
+    test_command_tokens!(ponderhit_tokens, "ponderhit", vec!["ponderhit"]);
+    test_command_tokens!(
+        position_tokens_1,
+        "position startpos",
+        vec!["position", "startpos"]
+    );
+    test_command_tokens!(
+        position_tokens_2,
+        "position rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        vec![
+            "position",
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
+            "w",
+            "KQkq",
+            "-",
+            "0",
+            "1"
+        ]
+    );
+    test_command_tokens!(
+        position_tokens_3,
+        "position 8/8/8/8/8/8/8/8 b - - 0 0",
+        vec!["position", "8/8/8/8/8/8/8/8", "b", "-", "-", "0", "0"]
+    );
+    test_command_tokens!(
+        position_tokens_4,
+        "position rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 moves a1a2 b4b8R",
+        vec![
+            "position",
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
+            "w",
+            "KQkq",
+            "-",
+            "0",
+            "1",
+            "moves",
+            "a1a2",
+            "b4b8R"
+        ]
+    );
+    test_command_tokens!(
+        position_tokens_5,
+        "position startpos moves a2a4 h7h5 f2f8Q",
+        vec!["position", "startpos", "moves", "a2a4", "h7h5", "f2f8Q"]
+    );
+    test_command_tokens!(go_tokens, "go depth 2", vec!["go", "depth", "2"]);
+    test_command_tokens!(
+        go_tokens_2,
+        "go depth 2 wtime 123 btime 321",
+        vec!["go", "depth", "2", "wtime", "123", "btime", "321"]
+    );
+    test_command_tokens!(
+        go_tokens_3,
+        "go depth 2 infinite ponder",
+        vec!["go", "depth", "2", "infinite", "ponder"]
+    );
+    test_command_tokens!(debug_tokens, "debug on", vec!["debug", "on"]);
+    test_command_tokens!(
+        setoption_tokens,
+        "setoption myoption value 4",
+        vec!["setoption", "myoption", "value", "4"]
+    );
 }
