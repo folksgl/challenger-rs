@@ -31,7 +31,7 @@ impl Command {
         // Match the input against the UCI
         let uci_regex_set =
             RegexSet::new(&[
-                r"^(?:uci|isready|ucinewgame|stop|ponderhit|quit)$",
+                r"^(?:uci|isready|ucinewgame|stop|ponderhit)$",
                 r"^debug (?:on|off)$",
                 r"^position (?:startpos|(?:[rnbqkp12345678RNBQKP]{1,8}/){7}[rnbqkp12345678RNBQKP]{1,8} (w|b) (?:-|[KQkq]{1,4}) (?:-|[a-h][1-8]) (?:\d)+ (?:\d)+)(?: moves(?: [a-h][1-8][a-h][1-8][rnbqRNBQ]?)+)?$",
                 r"^go(?: ponder| infinite| (?:wtime|btime|winc|binc|movestogo|depth|nodes|mate|movetime) [\\d]+| searchmoves(?: [a-h][1-8][a-h][1-8][rnbqRNBQ]?)+)*$",
