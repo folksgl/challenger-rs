@@ -373,9 +373,26 @@ mod tests {
     test_invalid_command!(invalid_go_15, "go inc 4");
 
     // Valid stop
-    //test_valid_command!(valid__1, "");
+    test_valid_command!(valid_stop_1, "stop");
     // Invalid stop
-    //test_invalid_command!(invalid__1, "");
+    test_invalid_command!(invalid_stop_1, "sstop");
+    test_invalid_command!(invalid_stop_2, "stopp");
+    test_invalid_command!(invalid_stop_3, "st\nop");
+    test_invalid_command!(invalid_stop_4, "st\top");
+    test_invalid_command!(invalid_stop_5, "sto");
+    test_invalid_command!(invalid_stop_6, "top");
+    test_invalid_command!(invalid_stop_7, "st op");
+    test_invalid_command!(invalid_stop_8, "stop stop");
+    test_invalid_command!(invalid_stop_9, "stopstop");
+    test_invalid_command!(invalid_stop_10, "1stop");
+    test_invalid_command!(invalid_stop_11, "astop");
+    test_invalid_command!(invalid_stop_12, "stop1");
+    test_invalid_command!(invalid_stop_13, "stop 1");
+    test_invalid_command!(invalid_stop_14, "st p");
+    test_invalid_command!(invalid_stop_15, "s op");
+    test_invalid_command!(invalid_stop_16, "sto p");
+    test_invalid_command!(invalid_stop_17, "^stop");
+    test_invalid_command!(invalid_stop_18, "stop$");
 
     // Valid ponderhit
     //test_valid_command!(valid__1, "");
