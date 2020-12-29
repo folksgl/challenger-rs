@@ -28,7 +28,7 @@ impl Command {
         // Turn the input into an str of space-separated words
         let input = input.trim();
 
-        // Match the input against the UCI
+        // Match the input against known Universal Chess Interface (UCI) commands
         let uci_regex_set =
             RegexSet::new(&[
                 r"^(?:uci|isready|ucinewgame|stop|ponderhit)$",
