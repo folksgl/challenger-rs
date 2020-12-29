@@ -272,7 +272,79 @@ mod tests {
         "position 8/8/8/8/8/8/8/8 w KQkq - 0 1 moves d5f8B"
     );
     // Invalid position
-    //test_invalid_command!(invalid__1, "");
+    test_invalid_command!(invalid_position_1, "uposition");
+    test_invalid_command!(invalid_position_2, "positione");
+    test_invalid_command!(invalid_position_3, "posit on");
+    test_invalid_command!(invalid_position_4, "asdf");
+    test_invalid_command!(invalid_position_5, "\n\n");
+    test_invalid_command!(invalid_position_6, "osition");
+    test_invalid_command!(invalid_position_7, "startpos");
+    test_invalid_command!(invalid_position_8, "position 8/8/8/8/8/8/8/8 w KQkq - 0");
+    test_invalid_command!(invalid_position_9, "position 8/8/8/8/8/8/8/8 w KQkq - 0 -");
+    test_invalid_command!(
+        invalid_position_10,
+        "position 8/8/8/8/8/8/8/8 w KQkq - 0 w)"
+    );
+    test_invalid_command!(invalid_position_11, "position 8/8/8/8/8/8/8/8 - KQkq - 0 0");
+    test_invalid_command!(invalid_position_12, "position 8/8/8/8/8/8/8/u w KQkq - 0 0");
+    test_invalid_command!(invalid_position_13, "position 8/8/8/8/8/8/8/8 w tQkq - 0 0");
+    test_invalid_command!(invalid_position_14, "position 8/8/8/8/8/8/8/8 w Ktkq - 0 0");
+    test_invalid_command!(invalid_position_15, "position 8/8/8/8/8/8/8/8 w KQtq - 0 0");
+    test_invalid_command!(invalid_position_16, "position 8/8/8/8/8/8/8/8 w KQkt - 0 0");
+    test_invalid_command!(invalid_position_17, "position 8/8/8/8/8/8/8/8 w KQkq a 0 0");
+    test_invalid_command!(invalid_position_18, "position 8/8/8/8/8/8/8/8 w KQkq 1 0 0");
+    test_invalid_command!(invalid_position_19, "position 8/8/8/8/8//8/8 w KQkq - 0 0");
+    test_invalid_command!(invalid_position_20, "position 8/8/8/8/8/8/8/8 w - 0 0");
+    test_invalid_command!(invalid_position_21, "position startpos move a1a2");
+    test_invalid_command!(invalid_position_22, "position startpos moves i1a2");
+    test_invalid_command!(invalid_position_23, "position startpos moves a1j2");
+    test_invalid_command!(invalid_position_24, "position startpos moves a0a2");
+    test_invalid_command!(invalid_position_25, "position startpos moves a9a2");
+    test_invalid_command!(invalid_position_26, "position startpos moves a1a0");
+    test_invalid_command!(invalid_position_27, "position startpos moves a1a9");
+    test_invalid_command!(invalid_position_28, "position startpos moves a1a1qq");
+    test_invalid_command!(invalid_position_29, "position startpos moves a1a1W");
+    test_invalid_command!(invalid_position_30, "position startpos moves a1a1w");
+    test_invalid_command!(
+        invalid_position_31,
+        "position 8/8/8/8/8/8/8/8 w KQkq - 0 move a1a2"
+    );
+    test_invalid_command!(
+        invalid_position_32,
+        "position 8/8/8/8/8/8/8/8 w KQkq - 0 0 moves i1a2"
+    );
+    test_invalid_command!(
+        invalid_position_33,
+        "position 8/8/8/8/8/8/8/8 w KQkq - 0 0 moves a1j2"
+    );
+    test_invalid_command!(
+        invalid_position_34,
+        "position 8/8/8/8/8/8/8/8 w KQkq - 0 0 moves a0a2"
+    );
+    test_invalid_command!(
+        invalid_position_35,
+        "position 8/8/8/8/8/8/8/8 w KQkq - 0 0 moves a9a2"
+    );
+    test_invalid_command!(
+        invalid_position_36,
+        "position 8/8/8/8/8/8/8/8 w KQkq - 0 0 moves a1a0"
+    );
+    test_invalid_command!(
+        invalid_position_37,
+        "position 8/8/8/8/8/8/8/8 w KQkq - 0 0 moves a1a9"
+    );
+    test_invalid_command!(
+        invalid_position_38,
+        "position 8/8/8/8/8/8/8/8 w KQkq - 0 0 moves a1a1qq"
+    );
+    test_invalid_command!(
+        invalid_position_39,
+        "position 8/8/8/8/8/8/8/8 w KQkq - 0 0 moves a1a1W"
+    );
+    test_invalid_command!(
+        invalid_position_40,
+        "position 8/8/8/8/8/8/8/8 w KQkq - 0 0 moves a1a1w"
+    );
 
     // Valid go
     //test_valid_command!(valid__1, "", vec![""]);
