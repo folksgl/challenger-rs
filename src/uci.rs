@@ -395,7 +395,21 @@ mod tests {
     test_invalid_command!(invalid_stop_18, "stop$");
 
     // Valid ponderhit
-    //test_valid_command!(valid__1, "");
+    test_valid_command!(valid_ponderhit_1, "ponderhit");
     // Invalid ponderhit
-    //test_invalid_command!(invalid__1, "");
+    test_invalid_command!(invalid_ponderhit_1, "pponderhit");
+    test_invalid_command!(invalid_ponderhit_2, "ponderhitt");
+    test_invalid_command!(invalid_ponderhit_3, "ponder\nhit");
+    test_invalid_command!(invalid_ponderhit_4, "ponder\thit");
+    test_invalid_command!(invalid_ponderhit_5, "ponderhi");
+    test_invalid_command!(invalid_ponderhit_6, "onderhit");
+    test_invalid_command!(invalid_ponderhit_7, "ponder hit");
+    test_invalid_command!(invalid_ponderhit_8, "ponderhitponderhit");
+    test_invalid_command!(invalid_ponderhit_9, "ponderhit ponderhit");
+    test_invalid_command!(invalid_ponderhit_10, "p onderhit");
+    test_invalid_command!(invalid_ponderhit_11, "go ponderhit");
+    test_invalid_command!(invalid_ponderhit_12, "ponderhit isready");
+    test_invalid_command!(invalid_ponderhit_13, "^ponderhit");
+    test_invalid_command!(invalid_ponderhit_14, "ponderhit$");
+    test_invalid_command!(invalid_ponderhit_15, "ponderhit\nisready");
 }
