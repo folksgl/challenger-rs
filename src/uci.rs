@@ -175,11 +175,22 @@ mod tests {
     test_invalid_command!(invalid_setoption_9, "setoption\n name value x");
 
     // Valid ucinewgame
-    //test_valid_command!(valid__1, "", vec![""]);
+    test_valid_command!(valid_ucinewgame_1, "ucinewgame", vec!["ucinewgame"]);
+
     // Invalid ucinewgame
+    test_invalid_command!(invalid_ucinewgame_1, "uucinewgame");
+    test_invalid_command!(invalid_ucinewgame_2, "ucinewgamee");
+    test_invalid_command!(invalid_ucinewgame_3, "uci newgame");
+    test_invalid_command!(invalid_ucinewgame_4, "asdf");
+    test_invalid_command!(invalid_ucinewgame_5, "cinewgame");
+    test_invalid_command!(invalid_ucinewgame_6, "ucinewgam");
+    test_invalid_command!(invalid_ucinewgame_7, "ucinew\ngame");
+    test_invalid_command!(invalid_ucinewgame_8, "ucinewgameucinewgame");
+    test_invalid_command!(invalid_ucinewgame_9, "ucinewgame ucinewgame");
+    test_invalid_command!(invalid_ucinewgame_10, "^ucinewgame");
+    test_invalid_command!(invalid_ucinewgame_11, "ucinewgame$");
 
     // Valid position
-    //test_valid_command!(valid__1, "", vec![""]);
     // Invalid position
 
     // Valid go
