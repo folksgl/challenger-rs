@@ -1,6 +1,7 @@
 use std::io;
 use std::sync::mpsc;
 
+mod position;
 mod uci;
 
 pub fn producer(tx: mpsc::Sender<uci::Command>) {
