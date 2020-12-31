@@ -1,3 +1,4 @@
+use crate::position::Position;
 use regex::RegexSet;
 
 pub struct Command {
@@ -10,18 +11,6 @@ impl Command {
         Ok(Command {
             tokens: valid_input,
         })
-    }
-
-    pub fn execute(&self) {
-        match self.tokens[0].as_str() {
-            "uci" => println!("id name Challenger\nid author folksgl\nuciok"),
-            _ => println!("something else"),
-        }
-        print!("Command execution => ");
-        for token in self.tokens.iter() {
-            print!("{} + ", token);
-        }
-        println!("END");
     }
 
     fn validate_input_string(input: &str) -> Result<Vec<String>, &str> {
@@ -44,6 +33,19 @@ impl Command {
         } else {
             Err("Command failed UCI regex validation")
         }
+    }
+
+    pub fn execute(&self) {
+        match self.tokens[0].as_str() {
+            "uci" => println!("id name Challenger\nid author folksgl\nuciok"),
+            "position" => println!("{}", Position::new().to_string()),
+            _ => println!("something else"),
+        }
+        print!("Command execution => ");
+        for token in self.tokens.iter() {
+            print!("{} + ", token);
+        }
+        println!("END");
     }
 }
 

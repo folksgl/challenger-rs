@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate lazy_static;
+
 use std::io;
 use std::sync::mpsc;
 
