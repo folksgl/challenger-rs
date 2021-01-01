@@ -289,7 +289,7 @@ impl fmt::Display for Position {
             }
 
             // Check for next rank (add '/')
-            if ((i + 1) % 8 == 0) && i != 63 {
+            if (i + 1) % 8 == 0 {
                 // Make sure any remaining unoccupied squares are added
                 if unoccupied_count != 0 {
                     fen_string += &unoccupied_count.to_string();
@@ -298,6 +298,7 @@ impl fmt::Display for Position {
                 fen_string += "/";
             }
         }
+        fen_string.pop();
         fen_string = fen_string.split('/').rev().collect::<Vec<&str>>().join("/");
         let active_color = if self.is_white_move == true { "w" } else { "b" };
         let mut castling = String::new();
@@ -312,6 +313,9 @@ impl fmt::Display for Position {
         }
         if self.b_queenside_castle {
             castling += "q";
+        }
+        if castling.is_empty() {
+            castling += "-";
         }
         let passant = BITBOARD_TO_SQUARE.get(&self.passant_sq).unwrap();
 
@@ -558,12 +562,21 @@ mod position_tests {
         fen_startpos,
         "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
     );
+
     test_fen!(
         fen_startpos_e4,
         "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
     );
+
     test_fen!(
         fen_startpos_e4_c5,
         "rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2"
     );
+
+    test_fen!(
+        fen_complex_pos,
+        "1kb3r1/prp1bppp/1p1p1R1P/1Nn1p1Bq/3PnQ2/2P1PNP1/PPB2P2/2KR4 w - - 0 1"
+    );
+
+    test_fen!(fen_empty_pos, "8/8/8/8/8/8/8/8 w KQkq - 0 1");
 }
