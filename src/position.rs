@@ -220,6 +220,10 @@ impl Position {
             full_num: full_num,
         }
     }
+
+    pub fn find_move_from(other: &Self) -> String {
+        String::from("a2a4")
+    }
 }
 
 fn get_square_num(file: char, rank: char) -> usize {
