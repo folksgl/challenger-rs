@@ -2,83 +2,85 @@ use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fmt;
 
-const ONE: u64 = 0x01;
 lazy_static! {
     static ref BITBOARD_TO_SQUARE: HashMap<u64, &'static str> = {
         let mut m = HashMap::new();
         m.insert(0, "-");
         m.insert(square_bit(0), "a1");
-        m.insert(square_bit(1), "a2");
-        m.insert(square_bit(2), "a3");
-        m.insert(square_bit(3), "a4");
-        m.insert(square_bit(4), "a5");
-        m.insert(square_bit(5), "a6");
-        m.insert(square_bit(6), "a7");
-        m.insert(square_bit(7), "a8");
-        m.insert(square_bit(8), "b1");
+        m.insert(square_bit(1), "b1");
+        m.insert(square_bit(2), "c1");
+        m.insert(square_bit(3), "d1");
+        m.insert(square_bit(4), "e1");
+        m.insert(square_bit(5), "f1");
+        m.insert(square_bit(6), "g1");
+        m.insert(square_bit(7), "h1");
+        m.insert(square_bit(8), "a2");
         m.insert(square_bit(9), "b2");
-        m.insert(square_bit(10), "b3");
-        m.insert(square_bit(11), "b4");
-        m.insert(square_bit(12), "b5");
-        m.insert(square_bit(13), "b6");
-        m.insert(square_bit(14), "b7");
-        m.insert(square_bit(15), "b8");
-        m.insert(square_bit(16), "c1");
-        m.insert(square_bit(17), "c2");
+        m.insert(square_bit(10), "c2");
+        m.insert(square_bit(11), "d2");
+        m.insert(square_bit(12), "e2");
+        m.insert(square_bit(13), "f2");
+        m.insert(square_bit(14), "g2");
+        m.insert(square_bit(15), "h2");
+        m.insert(square_bit(16), "a3");
+        m.insert(square_bit(17), "b3");
         m.insert(square_bit(18), "c3");
-        m.insert(square_bit(19), "c4");
-        m.insert(square_bit(20), "c5");
-        m.insert(square_bit(21), "c6");
-        m.insert(square_bit(22), "c7");
-        m.insert(square_bit(23), "c8");
-        m.insert(square_bit(24), "d1");
-        m.insert(square_bit(25), "d2");
-        m.insert(square_bit(26), "d3");
+        m.insert(square_bit(19), "d3");
+        m.insert(square_bit(20), "e3");
+        m.insert(square_bit(21), "f3");
+        m.insert(square_bit(22), "g3");
+        m.insert(square_bit(23), "h3");
+        m.insert(square_bit(24), "a4");
+        m.insert(square_bit(25), "b4");
+        m.insert(square_bit(26), "c4");
         m.insert(square_bit(27), "d4");
-        m.insert(square_bit(28), "d5");
-        m.insert(square_bit(29), "d6");
-        m.insert(square_bit(30), "d7");
-        m.insert(square_bit(31), "d8");
-        m.insert(square_bit(32), "e1");
-        m.insert(square_bit(33), "e2");
-        m.insert(square_bit(34), "e3");
-        m.insert(square_bit(35), "e4");
+        m.insert(square_bit(28), "e4");
+        m.insert(square_bit(29), "f4");
+        m.insert(square_bit(30), "g4");
+        m.insert(square_bit(31), "h4");
+        m.insert(square_bit(32), "a5");
+        m.insert(square_bit(33), "b5");
+        m.insert(square_bit(34), "c5");
+        m.insert(square_bit(35), "d5");
         m.insert(square_bit(36), "e5");
-        m.insert(square_bit(37), "e6");
-        m.insert(square_bit(38), "e7");
-        m.insert(square_bit(39), "e8");
-        m.insert(square_bit(40), "f1");
-        m.insert(square_bit(41), "f2");
-        m.insert(square_bit(42), "f3");
-        m.insert(square_bit(43), "f4");
-        m.insert(square_bit(44), "f5");
+        m.insert(square_bit(37), "f5");
+        m.insert(square_bit(38), "g5");
+        m.insert(square_bit(39), "h5");
+        m.insert(square_bit(40), "a6");
+        m.insert(square_bit(41), "b6");
+        m.insert(square_bit(42), "c6");
+        m.insert(square_bit(43), "d6");
+        m.insert(square_bit(44), "e6");
         m.insert(square_bit(45), "f6");
-        m.insert(square_bit(46), "f7");
-        m.insert(square_bit(47), "f8");
-        m.insert(square_bit(48), "g1");
-        m.insert(square_bit(49), "g2");
-        m.insert(square_bit(50), "g3");
-        m.insert(square_bit(51), "g4");
-        m.insert(square_bit(52), "g5");
-        m.insert(square_bit(53), "g6");
+        m.insert(square_bit(46), "g6");
+        m.insert(square_bit(47), "h6");
+        m.insert(square_bit(48), "a7");
+        m.insert(square_bit(49), "b7");
+        m.insert(square_bit(50), "c7");
+        m.insert(square_bit(51), "d7");
+        m.insert(square_bit(52), "e7");
+        m.insert(square_bit(53), "f7");
         m.insert(square_bit(54), "g7");
-        m.insert(square_bit(55), "g8");
-        m.insert(square_bit(56), "h1");
-        m.insert(square_bit(57), "h2");
-        m.insert(square_bit(58), "h3");
-        m.insert(square_bit(59), "h4");
-        m.insert(square_bit(60), "h5");
-        m.insert(square_bit(61), "h6");
-        m.insert(square_bit(62), "h7");
+        m.insert(square_bit(55), "h7");
+        m.insert(square_bit(56), "a8");
+        m.insert(square_bit(57), "b8");
+        m.insert(square_bit(58), "c8");
+        m.insert(square_bit(59), "d8");
+        m.insert(square_bit(60), "e8");
+        m.insert(square_bit(61), "f8");
+        m.insert(square_bit(62), "g8");
         m.insert(square_bit(63), "h8");
         m
     };
 }
 
+const ONE: u64 = 0x01;
+
 const fn square_bit(i: usize) -> u64 {
     return ONE << i;
 }
 
+#[derive(Debug)]
 pub struct Position {
     bitboards: [u64; 14],
     passant_sq: u64,
@@ -226,6 +228,12 @@ impl std::cmp::PartialOrd for Position {
     }
 }
 
+impl std::cmp::Ord for Position {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.eval_score.cmp(&other.eval_score)
+    }
+}
+
 impl std::cmp::PartialEq for Position {
     fn eq(&self, other: &Self) -> bool {
         self.bitboards == other.bitboards
@@ -236,6 +244,8 @@ impl std::cmp::PartialEq for Position {
             && self.is_white_move == other.is_white_move
     }
 }
+
+impl std::cmp::Eq for Position {}
 
 impl fmt::Display for Position {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -268,6 +278,7 @@ impl fmt::Display for Position {
                         Position::BKING => "k",
                         _ => panic!("Error calculating fen string on match: {}", j),
                     };
+                    println!("{}", fen_string);
                     break; // Don't continue searching bitboards after a match on this square
                 }
             }
@@ -278,7 +289,7 @@ impl fmt::Display for Position {
             }
 
             // Check for next rank (add '/')
-            if (i % 8 == 0) && (i != 0) {
+            if ((i + 1) % 8 == 0) && i != 63 {
                 // Make sure any remaining unoccupied squares are added
                 if unoccupied_count != 0 {
                     fen_string += &unoccupied_count.to_string();
@@ -435,7 +446,7 @@ mod position_tests {
     }
 
     #[test]
-    fn test_from_constructor_bitboards() {
+    fn test_from_constructor_bitboards_startpos() {
         let position = Position::from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
         assert_eq!(0x000000000000FF00, position.bitboards[Position::WPAWN]);
         assert_eq!(0x00FF000000000000, position.bitboards[Position::BPAWN]);
@@ -471,4 +482,88 @@ mod position_tests {
         assert_eq!(0xFFFF000000000000, manual_b_pieces);
         assert_eq!(0xFFFF000000000000, boards[Position::BPIECES]);
     }
+
+    #[test]
+    fn test_from_constructor_bitboards_1() {
+        let position = Position::from("1R6/1P6/k7/1R2K3/1p1P4/1pnr1bP1/BP1b4/3r4 w - - 0 1");
+        assert_eq!(0x0002000008400200, position.bitboards[Position::WPAWN]);
+        assert_eq!(0x0000000002020000, position.bitboards[Position::BPAWN]);
+        assert_eq!(0x0200000200000000, position.bitboards[Position::WROOK]);
+        assert_eq!(0x0000000000080008, position.bitboards[Position::BROOK]);
+        assert_eq!(0x0000000000000000, position.bitboards[Position::WKNIGHT]);
+        assert_eq!(0x0000000000040000, position.bitboards[Position::BKNIGHT]);
+        assert_eq!(0x0000000000000100, position.bitboards[Position::WBISHOP]);
+        assert_eq!(0x0000000000200800, position.bitboards[Position::BBISHOP]);
+        assert_eq!(0x0000000000000000, position.bitboards[Position::WQUEEN]);
+        assert_eq!(0x0000000000000000, position.bitboards[Position::BQUEEN]);
+        assert_eq!(0x0000001000000000, position.bitboards[Position::WKING]);
+        assert_eq!(0x0000010000000000, position.bitboards[Position::BKING]);
+
+        let boards = position.bitboards;
+        let manual_w_pieces = boards[Position::WPAWN]
+            | boards[Position::WROOK]
+            | boards[Position::WKNIGHT]
+            | boards[Position::WBISHOP]
+            | boards[Position::WQUEEN]
+            | boards[Position::WKING];
+
+        assert_eq!(0x0202001208400300, manual_w_pieces);
+        assert_eq!(0x0202001208400300, boards[Position::WPIECES]);
+
+        let manual_b_pieces = boards[Position::BPAWN]
+            | boards[Position::BROOK]
+            | boards[Position::BKNIGHT]
+            | boards[Position::BBISHOP]
+            | boards[Position::BQUEEN]
+            | boards[Position::BKING];
+
+        assert_eq!(0x00000100022E0808, manual_b_pieces);
+        assert_eq!(0x00000100022E0808, boards[Position::BPIECES]);
+    }
+
+    #[test]
+    fn test_position_ordering() {
+        let mut position_vec = vec![Position::new(), Position::new(), Position::new()];
+        position_vec[0].eval_score = 10;
+        position_vec[1].eval_score = 5;
+        position_vec[2].eval_score = 15;
+
+        position_vec.sort();
+
+        assert_eq!(position_vec[0].eval_score, 5);
+        assert_eq!(position_vec[1].eval_score, 10);
+        assert_eq!(position_vec[2].eval_score, 15);
+
+        position_vec[0].eval_score = 10;
+        position_vec[1].eval_score = 10;
+        position_vec[2].eval_score = 11;
+
+        position_vec.sort();
+
+        assert_eq!(position_vec[0].eval_score, 10);
+        assert_eq!(position_vec[1].eval_score, 10);
+        assert_eq!(position_vec[2].eval_score, 11);
+    }
+
+    macro_rules! test_fen {
+        ($test_name:ident, $fen:literal) => {
+            #[test]
+            fn $test_name() {
+                assert_eq!($fen, Position::from($fen).to_string());
+            }
+        };
+    }
+
+    test_fen!(
+        fen_startpos,
+        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+    );
+    test_fen!(
+        fen_startpos_e4,
+        "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
+    );
+    test_fen!(
+        fen_startpos_e4_c5,
+        "rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2"
+    );
 }
