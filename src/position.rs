@@ -222,6 +222,10 @@ impl Position {
     }
 }
 
+fn get_square_num(file: char, rank: char) -> usize {
+    return (file as usize - 'a' as usize) + ((rank as usize - '1' as usize) * 8);
+}
+
 impl std::cmp::PartialOrd for Position {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.eval_score.cmp(&other.eval_score))
@@ -255,15 +259,15 @@ impl fmt::Display for Position {
         // Iterate from 64th -> 1st squares and build fen string in logical order.
         // Left->Right fen ordering will be enforced after initial fen is built.
         for i in 0..=63 {
-            let mut occupied = false;
-            for (j, bitboard) in self.bitboards.iter().enumerate() {
-                if (bitboard & square_bit(i)) != 0 {
-                    occupied = true;
+            let piece_position = self.bitboards.iter().position(|&x| x & square_bit(i) != 0);
+
+            match piece_position {
+                Some(index) => {
                     if unoccupied_count != 0 {
                         fen_string += &unoccupied_count.to_string();
                         unoccupied_count = 0;
                     }
-                    fen_string += match j {
+                    fen_string += match index {
                         Position::WPAWN => "P",
                         Position::WROOK => "R",
                         Position::WKNIGHT => "N",
@@ -276,16 +280,10 @@ impl fmt::Display for Position {
                         Position::BBISHOP => "b",
                         Position::BQUEEN => "q",
                         Position::BKING => "k",
-                        _ => panic!("Error calculating fen string on match: {}", j),
+                        _ => panic!("Error calculating fen string on match: {}", index),
                     };
-                    println!("{}", fen_string);
-                    break; // Don't continue searching bitboards after a match on this square
                 }
-            }
-
-            if !occupied {
-                // No bitboards had a set bit on this square
-                unoccupied_count += 1;
+                None => unoccupied_count += 1,
             }
 
             // Check for next rank (add '/')
@@ -298,9 +296,14 @@ impl fmt::Display for Position {
                 fen_string += "/";
             }
         }
+        // Remove trailing '/' from constructed fen
         fen_string.pop();
+
+        // Reverse the order of the ranks to be from 8..1 instead of 1..8
         fen_string = fen_string.split('/').rev().collect::<Vec<&str>>().join("/");
+
         let active_color = if self.is_white_move == true { "w" } else { "b" };
+
         let mut castling = String::new();
         if self.w_kingside_castle {
             castling += "K";
@@ -325,10 +328,6 @@ impl fmt::Display for Position {
             fen_string, active_color, castling, passant, self.hlf_clock, self.full_num
         )
     }
-}
-
-fn get_square_num(file: char, rank: char) -> usize {
-    return (file as usize - 'a' as usize) + ((rank as usize - '1' as usize) * 8);
 }
 
 #[cfg(test)]
