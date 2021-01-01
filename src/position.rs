@@ -339,6 +339,8 @@ mod position_tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;
 
+    const STARTPOS: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
     macro_rules! test_square_num {
         ($test_name:ident, $file:literal, $rank:literal, $expected:expr) => {
             #[test]
@@ -454,7 +456,7 @@ mod position_tests {
 
     #[test]
     fn test_from_constructor_bitboards_startpos() {
-        let position = Position::from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+        let position = Position::from(STARTPOS);
         assert_eq!(0x000000000000FF00, position.bitboards[Position::WPAWN]);
         assert_eq!(0x00FF000000000000, position.bitboards[Position::BPAWN]);
         assert_eq!(0x0000000000000081, position.bitboards[Position::WROOK]);
@@ -553,7 +555,7 @@ mod position_tests {
     }
 
     macro_rules! test_fen {
-        ($test_name:ident, $fen:literal) => {
+        ($test_name:ident, $fen:expr) => {
             #[test]
             fn $test_name() {
                 assert_eq!($fen, Position::from($fen).to_string());
@@ -561,10 +563,7 @@ mod position_tests {
         };
     }
 
-    test_fen!(
-        fen_startpos,
-        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-    );
+    test_fen!(fen_startpos, STARTPOS);
 
     test_fen!(
         fen_startpos_e4,
