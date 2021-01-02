@@ -91,8 +91,8 @@ pub struct Position {
     b_queenside_castle: bool,
     eval_score: usize,
     is_white_move: bool,
-    hlf_clock: usize,
-    full_num: usize,
+    hlf_clock: isize,
+    full_num: isize,
 }
 
 impl Position {
@@ -162,7 +162,7 @@ impl Position {
         }
 
         let hlf_clock = iter.next().unwrap().parse().unwrap();
-        let full_num: usize = iter.next().unwrap().parse().unwrap();
+        let full_num = iter.next().unwrap().parse().unwrap();
 
         let mut pieces_arr = [0; 14];
         let fen: String = piece_positions.split('/').rev().collect();
@@ -223,6 +223,75 @@ impl Position {
 
     pub fn find_move_from(other: &Self) -> String {
         String::from("a2a4")
+    }
+
+    pub fn r#move(&mut self, move_str: &str) {
+        let mut move_chars = move_str.chars();
+        let start_square = get_square_num(move_chars.next().unwrap(), move_chars.next().unwrap());
+        let dest_square = get_square_num(move_chars.next().unwrap(), move_chars.next().unwrap());
+        let promotion = move_chars.next();
+
+        // Check if there is a piece on the dest square and remove if needed.
+        let start_square_bit = square_bit(start_square);
+        let dest_square_bit = square_bit(dest_square);
+        let moving_bits = start_square_bit | dest_square_bit;
+
+        // If a capture is taking place. Zero the destination square and reset halfmove clock.
+        if (self.whole_board() & dest_square_bit) != 0 {
+            let dest_zero_mask = !dest_square_bit;
+            for bitboard in self.bitboards.iter_mut() {
+                *bitboard &= dest_zero_mask;
+            }
+            self.hlf_clock = -1;
+        }
+
+        let new_passant_sq = 0; // Default is 0, only set on double forward pawn move
+        let moving_piece = self
+            .bitboards
+            .iter()
+            .position(|&x| x & square_bit(start_square) != 0)
+            .unwrap();
+
+        match moving_piece {
+            Position::WPAWN | Position::BPAWN => {
+                // Check for en passant capture
+                if (dest_square_bit & self.passant_sq) != 0 {
+                    let dest_zero = if moving_piece == Position::WPAWN {
+                        dest_square - 8
+                    } else {
+                        dest_square + 8
+                    };
+
+                    let mask = !square_bit(dest_zero);
+
+                    self.bitboards[Position::WPIECES] &= mask;
+                    self.bitboards[Position::BPIECES] &= mask;
+                    self.bitboards[Position::WPAWN] &= mask;
+                    self.bitboards[Position::BPAWN] &= mask;
+                } else if (dest_square as isize - start_square as isize).abs() == 16 {
+                    // Pawn double forward
+                    let new_passant_sq = square_bit((start_square + dest_square) / 2);
+                } else if (dest_square_bit & (rank_1 | rank_8)) { // Pawn promotion
+                     // YOU LEFT OFF HERE! FIGURE THAT SHIT OUT DUMMY
+                }
+                print!("Pawn")
+            }
+            Position::WKING => {
+                print!("Pawn")
+            }
+            Position::BKING => {
+                print!("Pawn")
+            }
+            Position::WROOK | Position::BROOK => {
+                print!("Pawn")
+            }
+            _ => panic!("Invalid moving piece"),
+        }
+    }
+
+    #[inline]
+    fn whole_board(&self) -> u64 {
+        self.bitboards[Position::WPIECES] | self.bitboards[Position::BPIECES]
     }
 }
 
@@ -340,6 +409,17 @@ mod position_tests {
     use super::*;
 
     const STARTPOS: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+    // The 6 "complex" positions here are directly from https://www.chessprogramming.org/Perft_Results
+    // and are especially useful postions for debugging.
+    const COMPLEX_POS_2: &str =
+        "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
+    const COMPLEX_POS_3: &str = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1";
+    const COMPLEX_POS_4A: &str = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1";
+    const COMPLEX_POS_4B: &str = "r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ - 0 1";
+    const COMPLEX_POS_5: &str = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
+    const COMPLEX_POS_6: &str =
+        "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10";
 
     macro_rules! test_square_num {
         ($test_name:ident, $file:literal, $rank:literal, $expected:expr) => {
@@ -554,6 +634,7 @@ mod position_tests {
         assert_eq!(position_vec[2].eval_score, 11);
     }
 
+    // Test that generated fen string matches the fen used to construct the position
     macro_rules! test_fen {
         ($test_name:ident, $fen:expr) => {
             #[test]
@@ -581,4 +662,65 @@ mod position_tests {
     );
 
     test_fen!(fen_empty_pos, "8/8/8/8/8/8/8/8 w KQkq - 0 1");
+    test_fen!(fen_complex_2, COMPLEX_POS_2);
+    test_fen!(fen_complex_3, COMPLEX_POS_3);
+    test_fen!(fen_complex_4a, COMPLEX_POS_4A);
+    test_fen!(fen_complex_4b, COMPLEX_POS_4B);
+    test_fen!(fen_complex_5, COMPLEX_POS_5);
+    test_fen!(fen_complex_6, COMPLEX_POS_6);
+
+    // Test castling rights after position construction using Position::from
+    #[test]
+    fn test_from_constructor_castling_w_kingside() {
+        let position = Position::from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w K - 0 1");
+        assert!(position.w_kingside_castle);
+        assert!(!position.w_queenside_castle);
+        assert!(!position.b_kingside_castle);
+        assert!(!position.b_queenside_castle);
+    }
+
+    #[test]
+    fn test_from_constructor_castling_w_queenside() {
+        let position = Position::from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w Q - 0 1");
+        assert!(!position.w_kingside_castle);
+        assert!(position.w_queenside_castle);
+        assert!(!position.b_kingside_castle);
+        assert!(!position.b_queenside_castle);
+    }
+
+    #[test]
+    fn test_from_constructor_castling_b_kingside() {
+        let position = Position::from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w k - 0 1");
+        assert!(!position.w_kingside_castle);
+        assert!(!position.w_queenside_castle);
+        assert!(position.b_kingside_castle);
+        assert!(!position.b_queenside_castle);
+    }
+
+    #[test]
+    fn test_from_constructor_castling_b_queenside() {
+        let position = Position::from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w q - 0 1");
+        assert!(!position.w_kingside_castle);
+        assert!(!position.w_queenside_castle);
+        assert!(!position.b_kingside_castle);
+        assert!(position.b_queenside_castle);
+    }
+
+    #[test]
+    fn test_from_constructor_castling_w() {
+        let position = Position::from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQ - 0 1");
+        assert!(position.w_kingside_castle);
+        assert!(position.w_queenside_castle);
+        assert!(!position.b_kingside_castle);
+        assert!(!position.b_queenside_castle);
+    }
+
+    #[test]
+    fn test_from_constructor_castling_b() {
+        let position = Position::from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w kq - 0 1");
+        assert!(!position.w_kingside_castle);
+        assert!(!position.w_queenside_castle);
+        assert!(position.b_kingside_castle);
+        assert!(position.b_queenside_castle);
+    }
 }
