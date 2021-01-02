@@ -112,6 +112,15 @@ impl Position {
     const BKING: usize = 12;
     const BPIECES: usize = 13;
 
+    const RANK1: u64 = 0x00000000000000FF;
+    const RANK2: u64 = 0x000000000000FF00;
+    const RANK3: u64 = 0x0000000000FF0000;
+    const RANK4: u64 = 0x00000000FF000000;
+    const RANK5: u64 = 0x000000FF00000000;
+    const RANK6: u64 = 0x0000FF0000000000;
+    const RANK7: u64 = 0x00FF000000000000;
+    const RANK8: u64 = 0xFF00000000000000;
+
     // Returns a position containing the starting chess position.
     // Fen string: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
     pub fn new() -> Position {
@@ -225,7 +234,7 @@ impl Position {
         String::from("a2a4")
     }
 
-    pub fn r#move(&mut self, move_str: &str) {
+    pub fn perform_move(&mut self, move_str: &str) {
         let mut move_chars = move_str.chars();
         let start_square = get_square_num(move_chars.next().unwrap(), move_chars.next().unwrap());
         let dest_square = get_square_num(move_chars.next().unwrap(), move_chars.next().unwrap());
@@ -245,7 +254,7 @@ impl Position {
             self.hlf_clock = -1;
         }
 
-        let new_passant_sq = 0; // Default is 0, only set on double forward pawn move
+        let mut new_passant_sq = 0; // Default is 0, only set on double forward pawn move
         let moving_piece = self
             .bitboards
             .iter()
@@ -270,23 +279,79 @@ impl Position {
                     self.bitboards[Position::BPAWN] &= mask;
                 } else if (dest_square as isize - start_square as isize).abs() == 16 {
                     // Pawn double forward
-                    let new_passant_sq = square_bit((start_square + dest_square) / 2);
-                } else if (dest_square_bit & (rank_1 | rank_8)) { // Pawn promotion
-                     // YOU LEFT OFF HERE! FIGURE THAT SHIT OUT DUMMY
+                    new_passant_sq = square_bit((start_square + dest_square) / 2);
+                } else if (dest_square_bit & (Position::RANK1 | Position::RANK8)) != 0 {
+                    // Pawn promotion
+                    self.bitboards[moving_piece] |= dest_square_bit;
+                    match promotion.unwrap() {
+                        'Q' => self.bitboards[Position::WQUEEN] |= dest_square_bit,
+                        'q' => self.bitboards[Position::BQUEEN] |= dest_square_bit,
+                        'R' => self.bitboards[Position::WROOK] |= dest_square_bit,
+                        'r' => self.bitboards[Position::BROOK] |= dest_square_bit,
+                        'N' => self.bitboards[Position::WKNIGHT] |= dest_square_bit,
+                        'n' => self.bitboards[Position::BKNIGHT] |= dest_square_bit,
+                        'B' => self.bitboards[Position::WBISHOP] |= dest_square_bit,
+                        'b' => self.bitboards[Position::BBISHOP] |= dest_square_bit,
+                        _ => panic!("Invalid promotion character"),
+                    }
                 }
-                print!("Pawn")
+                self.hlf_clock = -1; // Pawn moves reset the halfmove clock.
             }
             Position::WKING => {
-                print!("Pawn")
+                self.w_kingside_castle = false;
+                self.w_queenside_castle = false;
+                self.hlf_clock = -1;
+                if (start_square - dest_square) == 2 {
+                    // Queenside Castling
+                    self.bitboards[Position::WROOK] ^= 0x0000000000000009;
+                    self.bitboards[Position::WPIECES] ^= 0x0000000000000009;
+                } else if (start_square as isize - dest_square as isize) == -2 {
+                    // Kingside Castling
+                    self.bitboards[Position::WROOK] ^= 0x00000000000000A0;
+                    self.bitboards[Position::WPIECES] ^= 0x00000000000000A0;
+                }
             }
             Position::BKING => {
-                print!("Pawn")
+                self.b_kingside_castle = false;
+                self.b_queenside_castle = false;
+                self.hlf_clock = -1;
+                if (start_square - dest_square) == 2 {
+                    // Queenside Castling
+                    self.bitboards[Position::BROOK] ^= 0x0900000000000000;
+                    self.bitboards[Position::BPIECES] ^= 0x0900000000000000;
+                } else if (start_square as isize - dest_square as isize) == -2 {
+                    // Kingside Castling
+                    self.bitboards[Position::BROOK] ^= 0xA000000000000000;
+                    self.bitboards[Position::BPIECES] ^= 0xA000000000000000;
+                }
             }
             Position::WROOK | Position::BROOK => {
-                print!("Pawn")
+                match start_square {
+                    0 => self.w_queenside_castle = false,
+                    7 => self.w_kingside_castle = false,
+                    56 => self.b_queenside_castle = false,
+                    63 => self.b_kingside_castle = false,
+                    _ => {}
+                }
+                self.hlf_clock = -1;
             }
-            _ => panic!("Invalid moving piece"),
+            _ => {}
         }
+        self.passant_sq = new_passant_sq;
+
+        // Set side-to-move's changed bits
+        self.bitboards[moving_piece] ^= moving_bits;
+        if moving_piece < 6 {
+            self.bitboards[Position::WPIECES] ^= moving_bits;
+        } else {
+            self.bitboards[Position::BPIECES] ^= moving_bits;
+        }
+
+        if !self.is_white_move {
+            self.full_num += 1;
+        }
+        self.hlf_clock += 1; // Toggle halfmove clock.
+        self.is_white_move = !self.is_white_move; // Toggle active color.
     }
 
     #[inline]
@@ -722,5 +787,15 @@ mod position_tests {
         assert!(!position.w_queenside_castle);
         assert!(position.b_kingside_castle);
         assert!(position.b_queenside_castle);
+    }
+
+    #[test]
+    fn test_move_a2a4() {
+        let mut position = Position::new();
+        position.perform_move("a2a4");
+        assert_eq!(
+            "rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR b KQkq a3 0 1",
+            position.to_string()
+        );
     }
 }
