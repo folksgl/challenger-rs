@@ -75,8 +75,10 @@ lazy_static! {
 }
 
 const ONE: u64 = 0x01;
+const TWO: u64 = 0x10;
+const FOUR: u64 = TWO << ONE;
 
-const fn square_bit(i: usize) -> u64 {
+const fn square_bit(i: isize) -> u64 {
     return ONE << i;
 }
 
@@ -311,7 +313,7 @@ impl Position {
 
         let mut pieces_arr = [0; 14];
         let fen: String = piece_positions.split('/').rev().collect();
-        let mut square_num: usize = 0;
+        let mut square_num: isize = 0;
 
         for piece in fen.chars() {
             let current_piece = match piece {
@@ -329,7 +331,7 @@ impl Position {
                 'k' => Position::BKING,
                 '1'..='8' => {
                     let num = piece.to_digit(10).unwrap();
-                    square_num += num as usize;
+                    square_num += num as isize;
                     continue;
                 }
                 _ => panic!("failed to build position"),
@@ -413,7 +415,7 @@ impl Position {
                     self.bitboards[Position::BPIECES] &= mask;
                     self.bitboards[Position::WPAWN] &= mask;
                     self.bitboards[Position::BPAWN] &= mask;
-                } else if (dest_square as isize - start_square as isize).abs() == 16 {
+                } else if (dest_square - start_square).abs() == 16 {
                     // Pawn double forward
                     new_passant_sq = square_bit((start_square + dest_square) / 2);
                 } else if (dest_square_bit & (Position::RANK1 | Position::RANK8)) != 0 {
@@ -441,7 +443,7 @@ impl Position {
                     // Queenside Castling
                     self.bitboards[Position::WROOK] ^= 0x0000000000000009;
                     self.bitboards[Position::WPIECES] ^= 0x0000000000000009;
-                } else if (start_square as isize - dest_square as isize) == -2 {
+                } else if (start_square - dest_square) == -2 {
                     // Kingside Castling
                     self.bitboards[Position::WROOK] ^= 0x00000000000000A0;
                     self.bitboards[Position::WPIECES] ^= 0x00000000000000A0;
@@ -455,7 +457,7 @@ impl Position {
                     // Queenside Castling
                     self.bitboards[Position::BROOK] ^= 0x0900000000000000;
                     self.bitboards[Position::BPIECES] ^= 0x0900000000000000;
-                } else if (start_square as isize - dest_square as isize) == -2 {
+                } else if (start_square - dest_square) == -2 {
                     // Kingside Castling
                     self.bitboards[Position::BROOK] ^= 0xA000000000000000;
                     self.bitboards[Position::BPIECES] ^= 0xA000000000000000;
@@ -496,8 +498,8 @@ impl Position {
     }
 }
 
-fn get_square_num(file: char, rank: char) -> usize {
-    return (file as usize - 'a' as usize) + ((rank as usize - '1' as usize) * 8);
+fn get_square_num(file: char, rank: char) -> isize {
+    return (file as isize - 'a' as isize) + ((rank as isize - '1' as isize) * 8);
 }
 
 impl std::cmp::PartialOrd for Position {
@@ -934,4 +936,35 @@ mod position_tests {
             position.to_string()
         );
     }
+    macro_rules! test_moves {
+        ($test_name:ident, $moves:expr, $start_fen:expr, $end_fen:expr) => {
+            #[test]
+            fn $test_name() {
+                let mut position = Position::from($start_fen);
+                for move_str in $moves {
+                    position.perform_move(move_str);
+                }
+                assert_eq!($end_fen, position.to_string());
+            }
+        };
+    }
+
+    test_moves!(
+        test_moves_a2a4,
+        vec!["a2a4"],
+        STARTPOS,
+        "rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR b KQkq a3 0 1"
+    );
+    test_moves!(
+        test_moves_b1c3,
+        vec!["b1c3"],
+        STARTPOS,
+        "rnbqkbnr/pppppppp/8/8/8/2N5/PPPPPPPP/R1BQKBNR b KQkq - 1 1"
+    );
+    test_moves!(
+        test_moves_startpos_to_w_king_castling,
+        vec!["e2e4", "b8c6", "f1d3", "h7h6", "g1h3", "a8b8", "e1g1"],
+        STARTPOS,
+        "1rbqkbnr/ppppppp1/2n4p/8/4P3/3B3N/PPPP1PPP/RNBQ1RK1 b k - 0 4"
+    );
 }
