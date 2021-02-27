@@ -15,18 +15,6 @@ impl Command {
         })
     }
 
-    pub fn execute(&self) {
-        match self.tokens[0].as_str() {
-            "uci" => println!("id name Challenger\nid author folksgl\nuciok"),
-            _ => println!("something else"),
-        }
-        print!("Command execution => ");
-        for token in self.tokens.iter() {
-            print!("{} + ", token);
-        }
-        println!("END");
-    }
-
     fn validate_input_string(input: &str) -> Result<Vec<String>, &str> {
         // Turn the input into an str of space-separated words
         let input = input.trim();
@@ -46,6 +34,13 @@ impl Command {
             Ok(valid)
         } else {
             Err("Command failed UCI regex validation")
+        }
+    }
+
+    pub fn execute(&self) {
+        match self.tokens[0].as_str() {
+            "uci" => println!("id name Challenger\nid author folksgl\nuciok"),
+            _ => println!("something else"),
         }
     }
 }
