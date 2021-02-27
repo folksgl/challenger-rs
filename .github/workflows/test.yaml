@@ -7,6 +7,13 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      # Ignore .md files, COPYING, and CONTRIBUTING anywhere in the repo.
+      # Ignore files in the .github/img folder
+      - '**.md'
+      - '**/COPYING'
+      - '**/CONTRIBUTING'
+      - '.github/img/*'
   pull_request:
 
 jobs:
