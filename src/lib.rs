@@ -6,8 +6,9 @@ mod uci;
 pub fn producer(tx: mpsc::Sender<uci::Command>) {
     loop {
         let input = get_stdin_input();
+
         if input == "quit" {
-            // breaking out of this loop closes the Sender end of the channel to
+            // Breaking out of this loop causes the Sender end of the Channel to
             // close, which will cause the Receiver loop in `consumer` to end.
             break;
         }
