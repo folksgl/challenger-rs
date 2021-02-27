@@ -1,5 +1,8 @@
 use regex::RegexSet;
 
+// Commands represent valid UCI commands entered by a user. Only valid commands
+// should ever be sent to the Challenger engine to execute, so user input MUST
+// be validated before the '.execute()' method is called by the engine.
 pub struct Command {
     tokens: Vec<String>,
 }
@@ -10,18 +13,6 @@ impl Command {
         Ok(Command {
             tokens: valid_input,
         })
-    }
-
-    pub fn execute(&self) {
-        match self.tokens[0].as_str() {
-            "uci" => println!("id name Challenger\nid author folksgl\nuciok"),
-            _ => println!("something else"),
-        }
-        print!("Command execution => ");
-        for token in self.tokens.iter() {
-            print!("{} + ", token);
-        }
-        println!("END");
     }
 
     fn validate_input_string(input: &str) -> Result<Vec<String>, &str> {
@@ -43,6 +34,13 @@ impl Command {
             Ok(valid)
         } else {
             Err("Command failed UCI regex validation")
+        }
+    }
+
+    pub fn execute(&self) {
+        match self.tokens[0].as_str() {
+            "uci" => println!("id name Challenger\nid author folksgl\nuciok"),
+            _ => println!("something else"),
         }
     }
 }
