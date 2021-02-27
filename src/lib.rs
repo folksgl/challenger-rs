@@ -30,5 +30,8 @@ pub fn consumer(rx: mpsc::Receiver<uci::Command>) {
 fn get_stdin_input() -> String {
     let mut input = String::new();
     io::stdin().read_line(&mut input).unwrap();
+
+    // Trim whitespace from the ends of the input but otherwise leave the input
+    // unchanged. Invalid or malformed commands will be ignored.
     input.trim().to_string()
 }
