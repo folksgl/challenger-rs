@@ -1,5 +1,8 @@
 use regex::RegexSet;
 
+// Commands represent valid UCI commands entered by a user. Only valid commands
+// should ever be sent to the Challenger engine to execute, so user input MUST
+// be validated before the '.execute()' method is called by the engine.
 pub struct Command {
     tokens: Vec<String>,
 }

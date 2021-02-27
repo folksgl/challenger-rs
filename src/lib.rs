@@ -13,6 +13,7 @@ pub fn producer(tx: mpsc::Sender<uci::Command>) {
             break;
         }
 
+        // If a valid Command can be constructed, send it to the engine
         let uci_command = match uci::Command::from(&input) {
             Ok(x) => x,
             Err(_) => continue,
