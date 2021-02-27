@@ -45,4 +45,4 @@ from finished and there are always portions of the code or documentation that
 can be improved.
 
 ## License
-Please read the [License](#LICENSE) for this project.
+Please read the [License](#COPYING) for this project.
