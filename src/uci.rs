@@ -1,4 +1,6 @@
 use regex::RegexSet;
+use std::io;
+use std::sync::mpsc;
 
 // Commands represent valid UCI commands entered by a user. Only valid commands
 // should ever be sent to the Challenger engine to execute, so user input MUST
@@ -43,6 +45,45 @@ impl Command {
             _ => println!("something else"),
         }
     }
+}
+
+// "Produces" Commands by parsing stdin input and sending the resulting
+// Command struct to the consuming mpsc::Receiver
+pub fn producer(tx: mpsc::Sender<Command>) {
+    loop {
+        let input = get_stdin_input();
+
+        if input == "quit" {
+            // Breaking out of this loop causes the Sender end of the Channel to
+            // close, which will cause the Receiver loop in `consumer` to end.
+            break;
+        }
+
+        // If a valid Command can be constructed, send it to the engine
+        let uci_command = match Command::from(&input) {
+            Ok(x) => x,
+            Err(_) => continue,
+        };
+        tx.send(uci_command).unwrap();
+    }
+}
+
+// "Consumes" Commands by reading from the mpsc::Receiver and executing
+// the received Command.
+pub fn consumer(rx: mpsc::Receiver<Command>) {
+    for command in rx {
+        command.execute();
+    }
+}
+
+// Return the next line read from stdin.
+fn get_stdin_input() -> String {
+    let mut input = String::new();
+    io::stdin().read_line(&mut input).unwrap();
+
+    // Trim whitespace from the ends of the input but otherwise leave the input
+    // unchanged. Invalid or malformed commands will be ignored.
+    input.trim().to_string()
 }
 
 #[cfg(test)]
