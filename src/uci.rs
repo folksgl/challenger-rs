@@ -51,7 +51,10 @@ fn validate_input_string(input: &str) -> Result<Vec<String>, &str> {
 // Command struct to the consuming mpsc::Receiver
 pub fn producer(tx: mpsc::Sender<Command>) {
     loop {
-        let input = get_stdin_input();
+        let mut buffer = String::new();
+        io::stdin().read_line(&mut buffer).unwrap();
+
+        let input = buffer.trim();
 
         if input == "quit" {
             // Breaking out of this loop causes the Sender end of the Channel to
@@ -74,16 +77,6 @@ pub fn consumer(rx: mpsc::Receiver<Command>) {
     for command in rx {
         command.execute();
     }
-}
-
-// Return the next line read from stdin.
-fn get_stdin_input() -> String {
-    let mut input = String::new();
-    io::stdin().read_line(&mut input).unwrap();
-
-    // Trim whitespace from the ends of the input but otherwise leave the input
-    // unchanged. Invalid or malformed commands will be ignored.
-    input.trim().to_string()
 }
 
 #[cfg(test)]
