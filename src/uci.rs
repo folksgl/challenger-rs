@@ -6,23 +6,36 @@ use std::sync::mpsc;
 // should ever be sent to the Challenger engine to execute, so user input MUST
 // be validated before the '.execute()' method is called by the engine.
 pub struct Command {
-    tokens: Vec<String>,
+    input_string: String,
 }
 
 impl Command {
     pub fn from(input: &str) -> Result<Command, &str> {
-        let valid_input = Self::validate_input_string(input)?;
+        let valid_input = validate_input_string(input)?;
         Ok(Command {
-            tokens: valid_input,
+            input_string: valid_input,
         })
     }
 
-    fn validate_input_string(input: &str) -> Result<Vec<String>, &str> {
-        // Turn the input into an str of space-separated words
-        let input = input.trim();
+    pub fn execute(&self) {
+        match self.tokens()[0] {
+            "uci" => println!("id name Challenger\nid author folksgl\nuciok"),
+            _ => println!("something else"),
+        }
+    }
 
-        // Match the input against known Universal Chess Interface (UCI) commands
-        let uci_regex_set =
+    pub fn tokens(&self) -> Vec<&str> {
+        return self.input_string.split_whitespace().collect();
+    }
+}
+
+// Validate that the input is a well-formed UCI command string. Return the
+// command tokens in a vector, or Err() if invalid.
+fn validate_input_string(input: &str) -> Result<String, &str> {
+    let input = input.trim();
+
+    // Match the input against known Universal Chess Interface (UCI) commands
+    let uci_regex_set =
             RegexSet::new(&[
                 r"^(?:uci|isready|ucinewgame|stop|ponderhit)$",
                 r"^debug (?:on|off)$",
@@ -31,19 +44,10 @@ impl Command {
                 r"^setoption [[:word:]]+(?: value [[:word:]]+)?$"
             ]).unwrap();
 
-        if uci_regex_set.is_match(&input) {
-            let valid = input.split_whitespace().map(|x| String::from(x)).collect();
-            Ok(valid)
-        } else {
-            Err("Command failed UCI regex validation")
-        }
-    }
-
-    pub fn execute(&self) {
-        match self.tokens[0].as_str() {
-            "uci" => println!("id name Challenger\nid author folksgl\nuciok"),
-            _ => println!("something else"),
-        }
+    if uci_regex_set.is_match(&input) {
+        Ok(String::from(input))
+    } else {
+        Err("Command failed UCI regex validation")
     }
 }
 
@@ -51,7 +55,10 @@ impl Command {
 // Command struct to the consuming mpsc::Receiver
 pub fn producer(tx: mpsc::Sender<Command>) {
     loop {
-        let input = get_stdin_input();
+        let mut buffer = String::new();
+        io::stdin().read_line(&mut buffer).unwrap();
+
+        let input = buffer.trim();
 
         if input == "quit" {
             // Breaking out of this loop causes the Sender end of the Channel to
@@ -76,16 +83,6 @@ pub fn consumer(rx: mpsc::Receiver<Command>) {
     }
 }
 
-// Return the next line read from stdin.
-fn get_stdin_input() -> String {
-    let mut input = String::new();
-    io::stdin().read_line(&mut input).unwrap();
-
-    // Trim whitespace from the ends of the input but otherwise leave the input
-    // unchanged. Invalid or malformed commands will be ignored.
-    input.trim().to_string()
-}
-
 #[cfg(test)]
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
@@ -97,7 +94,7 @@ mod tests {
         ($test_name:ident, $input_str:literal) => {
             #[test]
             fn $test_name() {
-                assert!(Command::validate_input_string($input_str).is_ok());
+                assert!(validate_input_string($input_str).is_ok());
             }
         };
     }
@@ -108,7 +105,7 @@ mod tests {
         ($test_name:ident, $input_str:literal) => {
             #[test]
             fn $test_name() {
-                assert!(Command::validate_input_string($input_str).is_err());
+                assert!(validate_input_string($input_str).is_err());
             }
         };
     }
@@ -457,8 +454,7 @@ mod tests {
         ($test_name:ident, $input_str:literal, $expected:expr) => {
             #[test]
             fn $test_name() {
-                let tokens = Command::from($input_str).unwrap().tokens;
-                assert_eq!(tokens, $expected);
+                assert_eq!(Command::from($input_str).unwrap().tokens(), $expected)
             }
         };
     }
