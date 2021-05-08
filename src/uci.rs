@@ -11,18 +11,26 @@ pub struct Command {
 
 impl Command {
     pub fn from(input: &str) -> Result<Command, &str> {
-        let valid_input = Self::validate_input_string(input)?;
+        let valid_input = validate_input_string(input)?;
         Ok(Command {
             tokens: valid_input,
         })
     }
 
-    fn validate_input_string(input: &str) -> Result<Vec<String>, &str> {
-        // Turn the input into an str of space-separated words
-        let input = input.trim();
+    pub fn execute(&self) {
+        match self.tokens[0].as_str() {
+            "uci" => println!("id name Challenger\nid author folksgl\nuciok"),
+            _ => println!("something else"),
+        }
+    }
+}
 
-        // Match the input against known Universal Chess Interface (UCI) commands
-        let uci_regex_set =
+fn validate_input_string(input: &str) -> Result<Vec<String>, &str> {
+    // Turn the input into an str of space-separated words
+    let input = input.trim();
+
+    // Match the input against known Universal Chess Interface (UCI) commands
+    let uci_regex_set =
             RegexSet::new(&[
                 r"^(?:uci|isready|ucinewgame|stop|ponderhit)$",
                 r"^debug (?:on|off)$",
@@ -31,19 +39,11 @@ impl Command {
                 r"^setoption [[:word:]]+(?: value [[:word:]]+)?$"
             ]).unwrap();
 
-        if uci_regex_set.is_match(&input) {
-            let valid = input.split_whitespace().map(|x| String::from(x)).collect();
-            Ok(valid)
-        } else {
-            Err("Command failed UCI regex validation")
-        }
-    }
-
-    pub fn execute(&self) {
-        match self.tokens[0].as_str() {
-            "uci" => println!("id name Challenger\nid author folksgl\nuciok"),
-            _ => println!("something else"),
-        }
+    if uci_regex_set.is_match(&input) {
+        let valid = input.split_whitespace().map(|x| String::from(x)).collect();
+        Ok(valid)
+    } else {
+        Err("Command failed UCI regex validation")
     }
 }
 
