@@ -25,8 +25,9 @@ impl Command {
     }
 }
 
+// Validate that the input is a well-formed UCI command string. Return the
+// command tokens in a vector, or Err() if invalid.
 fn validate_input_string(input: &str) -> Result<Vec<String>, &str> {
-    // Turn the input into an str of space-separated words
     let input = input.trim();
 
     // Match the input against known Universal Chess Interface (UCI) commands
@@ -90,7 +91,7 @@ mod tests {
         ($test_name:ident, $input_str:literal) => {
             #[test]
             fn $test_name() {
-                assert!(Command::validate_input_string($input_str).is_ok());
+                assert!(validate_input_string($input_str).is_ok());
             }
         };
     }
@@ -101,7 +102,7 @@ mod tests {
         ($test_name:ident, $input_str:literal) => {
             #[test]
             fn $test_name() {
-                assert!(Command::validate_input_string($input_str).is_err());
+                assert!(validate_input_string($input_str).is_err());
             }
         };
     }
