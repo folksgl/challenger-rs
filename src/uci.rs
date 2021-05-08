@@ -6,28 +6,32 @@ use std::sync::mpsc;
 // should ever be sent to the Challenger engine to execute, so user input MUST
 // be validated before the '.execute()' method is called by the engine.
 pub struct Command {
-    tokens: Vec<String>,
+    input_string: String,
 }
 
 impl Command {
     pub fn from(input: &str) -> Result<Command, &str> {
         let valid_input = validate_input_string(input)?;
         Ok(Command {
-            tokens: valid_input,
+            input_string: valid_input,
         })
     }
 
     pub fn execute(&self) {
-        match self.tokens[0].as_str() {
+        match self.tokens()[0] {
             "uci" => println!("id name Challenger\nid author folksgl\nuciok"),
             _ => println!("something else"),
         }
+    }
+
+    pub fn tokens(&self) -> Vec<&str> {
+        return self.input_string.split_whitespace().collect();
     }
 }
 
 // Validate that the input is a well-formed UCI command string. Return the
 // command tokens in a vector, or Err() if invalid.
-fn validate_input_string(input: &str) -> Result<Vec<String>, &str> {
+fn validate_input_string(input: &str) -> Result<String, &str> {
     let input = input.trim();
 
     // Match the input against known Universal Chess Interface (UCI) commands
@@ -41,8 +45,7 @@ fn validate_input_string(input: &str) -> Result<Vec<String>, &str> {
             ]).unwrap();
 
     if uci_regex_set.is_match(&input) {
-        let valid = input.split_whitespace().map(|x| String::from(x)).collect();
-        Ok(valid)
+        Ok(String::from(input))
     } else {
         Err("Command failed UCI regex validation")
     }
@@ -451,8 +454,7 @@ mod tests {
         ($test_name:ident, $input_str:literal, $expected:expr) => {
             #[test]
             fn $test_name() {
-                let tokens = Command::from($input_str).unwrap().tokens;
-                assert_eq!(tokens, $expected);
+                assert_eq!(Command::from($input_str).unwrap().tokens(), $expected)
             }
         };
     }
