@@ -19,15 +19,13 @@ pub fn start_uci_engine() {
 // should ever be sent to the Challenger engine to execute, so user input MUST
 // be validated before the '.execute()' method is called by the engine.
 struct Command {
-    input_string: String,
+    uci_string: String,
 }
 
 impl Command {
     pub fn from(input: &str) -> Result<Command, &str> {
-        let valid_input = validate_input_string(input)?;
-        Ok(Command {
-            input_string: valid_input,
-        })
+        let uci_string = validate_input_string(input)?;
+        Ok(Command { uci_string })
     }
 
     pub fn execute(&self) {
@@ -38,7 +36,7 @@ impl Command {
     }
 
     pub fn tokens(&self) -> Vec<&str> {
-        return self.input_string.split_whitespace().collect();
+        return self.uci_string.split_whitespace().collect();
     }
 }
 
