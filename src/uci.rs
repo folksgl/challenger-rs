@@ -1,6 +1,19 @@
 use regex::RegexSet;
 use std::io;
 use std::sync::mpsc;
+use std::thread;
+
+// Begin accepting UCI commands from stdin. This is the entry point for running
+// Challenger. All game actions and modifications begin from stdin.
+pub fn start_uci_engine() {
+    let (sender, receiver) = mpsc::channel();
+
+    let producer_handle = thread::spawn(move || producer(sender));
+    let consumer_handle = thread::spawn(move || consumer(receiver));
+
+    producer_handle.join().unwrap();
+    consumer_handle.join().unwrap();
+}
 
 // Commands represent valid UCI commands entered by a user. Only valid commands
 // should ever be sent to the Challenger engine to execute, so user input MUST
