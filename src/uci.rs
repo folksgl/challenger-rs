@@ -1,10 +1,15 @@
+// uci.rs serves as the interface between the user of challenger, and the
+// engine itself. This module is responsible for translating UCI commands (as
+// outlined in http://wbec-ridderkerk.nl/html/UCIProtocol.html) into
+// challenger-specific logic for implementing them.
+
 use regex::RegexSet;
 use std::io;
 use std::sync::mpsc;
 use std::thread;
 
-// Begin accepting UCI commands from stdin. This is the entry point for running
-// Challenger. All game actions and modifications begin from stdin.
+/// The entry point for running the Challenger engine. Spawns two threads, one
+/// accepting UCI commands from stdin and one processing those commands.
 pub fn start_uci_engine() {
     let (sender, receiver) = mpsc::channel();
 
@@ -23,19 +28,19 @@ struct Command {
 }
 
 impl Command {
-    pub fn from(input: &str) -> Result<Command, &str> {
+    fn from(input: &str) -> Result<Command, &str> {
         let uci_string = validate_input_string(input)?;
         Ok(Command { uci_string })
     }
 
-    pub fn execute(&self) {
+    fn execute(&self) {
         match self.tokens()[0] {
             "uci" => println!("id name Challenger\nid author folksgl\nuciok"),
             _ => println!("something else"),
         }
     }
 
-    pub fn tokens(&self) -> Vec<&str> {
+    fn tokens(&self) -> Vec<&str> {
         return self.uci_string.split_whitespace().collect();
     }
 }
