@@ -33,6 +33,7 @@ impl Command {
         Ok(Command { uci_string })
     }
 
+    // Execute the challenger-specific logic for a given UCI command.
     fn execute(&self) {
         match self.tokens()[0] {
             "uci" => println!("id name Challenger\nid author folksgl\nuciok"),
