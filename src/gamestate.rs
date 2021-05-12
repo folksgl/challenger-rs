@@ -8,7 +8,9 @@ pub struct GameState {
 impl GameState {
     pub fn from() -> GameState {
         GameState {
-            game_position: position::Position::from(),
+            game_position: position::Position::from(
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            ),
             debug: false,
         }
     }
