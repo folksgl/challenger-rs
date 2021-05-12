@@ -41,6 +41,7 @@ impl Command {
         match tokens[0] {
             "uci" => println!("id name Challenger\nid author folksgl\nuciok"),
             "debug" => game_state.debug = tokens[1] == "on",
+            "isready" => println!("readyok"),
             _ => println!("something else"),
         }
     }
