@@ -1,3 +1,5 @@
+mod gamestate;
+mod position;
 mod uci;
 
 fn main() {

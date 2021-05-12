@@ -3,6 +3,8 @@
 // outlined in http://wbec-ridderkerk.nl/html/UCIProtocol.html) into
 // challenger-specific logic for implementing them.
 
+use crate::gamestate;
+
 use regex::RegexSet;
 use std::io;
 use std::sync::mpsc;
@@ -33,7 +35,8 @@ impl Command {
         Ok(Command { uci_string })
     }
 
-    fn execute(&self) {
+    // Execute the challenger-specific logic for a given UCI command.
+    fn execute(&self, game_state: &mut gamestate::GameState) {
         match self.tokens()[0] {
             "uci" => println!("id name Challenger\nid author folksgl\nuciok"),
             _ => println!("something else"),
@@ -94,8 +97,10 @@ fn producer(tx: mpsc::Sender<Command>) {
 // "Consumes" Commands by reading from the mpsc::Receiver and executing
 // the received Command.
 fn consumer(rx: mpsc::Receiver<Command>) {
+    let mut game_state = gamestate::GameState::from();
+
     for command in rx {
-        command.execute();
+        command.execute(&mut game_state);
     }
 }
 
