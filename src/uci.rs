@@ -37,8 +37,10 @@ impl Command {
 
     // Execute the challenger-specific logic for a given UCI command.
     fn execute(&self, game_state: &mut gamestate::GameState) {
-        match self.tokens()[0] {
+        let tokens = self.tokens();
+        match tokens[0] {
             "uci" => println!("id name Challenger\nid author folksgl\nuciok"),
+            "debug" => game_state.debug = tokens[1] == "on",
             _ => println!("something else"),
         }
     }
@@ -546,4 +548,26 @@ mod tests {
         "setoption myoption value 4",
         vec!["setoption", "myoption", "value", "4"]
     );
+
+    // Convienience function for executing a command on a given GameState
+    fn run_command(game_state: &mut gamestate::GameState, command_str: &str) {
+        let command = Command::from(command_str).expect("Invalid test string provided");
+        command.execute(game_state);
+    }
+
+    #[test]
+    fn command_set_debug_on() {
+        let mut game_state = gamestate::GameState::from();
+        run_command(&mut game_state, "debug on");
+
+        assert_eq!(game_state.debug, true);
+    }
+
+    #[test]
+    fn command_set_debug_off() {
+        let mut game_state = gamestate::GameState::from();
+        run_command(&mut game_state, "debug off");
+
+        assert_eq!(game_state.debug, false);
+    }
 }
