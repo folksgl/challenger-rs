@@ -251,7 +251,7 @@ mod tests {
         ($test_name:ident, $castle_rights:expr, $position_member:ident, $expected:literal) => {
             #[test]
             fn $test_name() {
-                let fen = String::from("8/8/8/8/8/8/8/8 w ") + $castle_rights + " - 0 1";
+                let fen = concat!("8/8/8/8/8/8/8/8 w ", $castle_rights, " - 0 1");
                 assert_eq!(Position::from(&fen).$position_member, $expected);
             }
         };
