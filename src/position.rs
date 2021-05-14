@@ -43,15 +43,18 @@ const B_KING: usize = 12;
 const B_PIECES: usize = 13;
 
 pub struct Position {
-    pieces: [u64; 14],
-    passant_sq: u64,
-    w_kingside_castle: bool,
-    w_queenside_castle: bool,
-    b_kingside_castle: bool,
-    b_queenside_castle: bool,
-    is_white_move: bool,
-    hlf_clock: u8,
-    full_num: u8,
+    pieces: [u64; 14], // Bitboards
+    passant_sq: u64,   // En Passant square
+
+    // Castling rights
+    w_king_castle: bool,
+    w_queen_castle: bool,
+    b_king_castle: bool,
+    b_queen_castle: bool,
+
+    is_white_move: bool, // Side to move
+    hlf_clock: u8,       // Halfmove clock
+    full_num: u8,        // Fullmove number
 }
 
 impl Position {
@@ -68,10 +71,10 @@ impl Position {
         Position {
             pieces: [0; 14],
             passant_sq: 0,
-            w_kingside_castle: true,
-            w_queenside_castle: true,
-            b_kingside_castle: true,
-            b_queenside_castle: true,
+            w_king_castle: true,
+            w_queen_castle: true,
+            b_king_castle: true,
+            b_queen_castle: true,
             is_white_move: true,
             hlf_clock: 0,
             full_num: 0,
@@ -243,4 +246,35 @@ mod tests {
         B_PIECES,
         0x61F62D1440000000
     );
+
+    macro_rules! test_castle {
+        ($test_name:ident, $fen:expr, $castle_right:ident, $expected:literal) => {
+            #[test]
+            fn $test_name() {
+                assert_eq!(Position::from($fen).$castle_right, $expected);
+            }
+        };
+    }
+
+    test_castle!(startpos_w_kingside, startpos, w_king_castle, true);
+    test_castle!(startpos_w_queenside, startpos, w_queen_castle, true);
+    test_castle!(startpos_b_kingside, startpos, b_king_castle, true);
+    test_castle!(startpos_b_queenside, startpos, b_queen_castle, true);
+
+    test_castle!(complex2_w_kingside, complex_pos_2, w_king_castle, true);
+    test_castle!(complex2_w_queenside, complex_pos_2, w_queen_castle, true);
+    test_castle!(complex2_b_kingside, complex_pos_2, b_king_castle, true);
+    test_castle!(complex2_b_queenside, complex_pos_2, b_queen_castle, true);
+
+    test_castle!(complex3_w_kingside, complex_pos_3, w_king_castle, false);
+    test_castle!(complex3_w_queenside, complex_pos_3, w_queen_castle, false);
+    test_castle!(complex3_b_kingside, complex_pos_3, b_king_castle, false);
+    test_castle!(complex3_b_queenside, complex_pos_3, b_queen_castle, false);
+
+    test_castle!(complex4_w_kingside, complex_pos_4, w_king_castle, false);
+    test_castle!(complex4_w_queenside, complex_pos_4, w_queen_castle, false);
+    test_castle!(complex4_b_kingside, complex_pos_4, b_king_castle, true);
+    test_castle!(complex4_b_queenside, complex_pos_4, b_queen_castle, true);
+
+    test_castle!(single_w_kingside, "8/8/8/8/8/8/8/8 w KQkq - 0 1", w_king_castle, true)
 }
