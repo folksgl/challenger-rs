@@ -248,33 +248,93 @@ mod tests {
     );
 
     macro_rules! test_castle {
-        ($test_name:ident, $fen:expr, $castle_right:ident, $expected:literal) => {
+        ($test_name:ident, $castle_rights:expr, $position_member:ident, $expected:literal) => {
             #[test]
             fn $test_name() {
-                assert_eq!(Position::from($fen).$castle_right, $expected);
+                let fen = String::from("8/8/8/8/8/8/8/8 w ") + $castle_rights + " - 0 1";
+                assert_eq!(Position::from(&fen).$position_member, $expected);
             }
         };
     }
 
-    test_castle!(startpos_w_kingside, startpos, w_king_castle, true);
-    test_castle!(startpos_w_queenside, startpos, w_queen_castle, true);
-    test_castle!(startpos_b_kingside, startpos, b_king_castle, true);
-    test_castle!(startpos_b_queenside, startpos, b_queen_castle, true);
+    // Since castling availability is finite and small, test all possible combniations
+    test_castle!(castling_none_w_king, "-", w_king_castle, false);
+    test_castle!(caslting_none_w_queen, "-", w_queen_castle, false);
+    test_castle!(caslting_none_b_king, "-", b_king_castle, false);
+    test_castle!(caslting_none_b_queen, "-", b_queen_castle, false);
 
-    test_castle!(complex2_w_kingside, complex_pos_2, w_king_castle, true);
-    test_castle!(complex2_w_queenside, complex_pos_2, w_queen_castle, true);
-    test_castle!(complex2_b_kingside, complex_pos_2, b_king_castle, true);
-    test_castle!(complex2_b_queenside, complex_pos_2, b_queen_castle, true);
+    test_castle!(castling_K_w_king, "K", w_king_castle, true);
+    test_castle!(caslting_K_w_queen, "K", w_queen_castle, false);
+    test_castle!(caslting_K_b_king, "K", b_king_castle, false);
+    test_castle!(caslting_K_b_queen, "K", b_queen_castle, false);
 
-    test_castle!(complex3_w_kingside, complex_pos_3, w_king_castle, false);
-    test_castle!(complex3_w_queenside, complex_pos_3, w_queen_castle, false);
-    test_castle!(complex3_b_kingside, complex_pos_3, b_king_castle, false);
-    test_castle!(complex3_b_queenside, complex_pos_3, b_queen_castle, false);
+    test_castle!(castling_k_w_king, "k", w_king_castle, false);
+    test_castle!(castling_k_w_queen, "k", w_queen_castle, false);
+    test_castle!(castling_k_b_king, "k", b_king_castle, true);
+    test_castle!(castling_k_b_queen, "k", b_queen_castle, false);
 
-    test_castle!(complex4_w_kingside, complex_pos_4, w_king_castle, false);
-    test_castle!(complex4_w_queenside, complex_pos_4, w_queen_castle, false);
-    test_castle!(complex4_b_kingside, complex_pos_4, b_king_castle, true);
-    test_castle!(complex4_b_queenside, complex_pos_4, b_queen_castle, true);
+    test_castle!(castling_Q_w_king, "Q", w_king_castle, false);
+    test_castle!(castling_Q_w_queen, "Q", w_queen_castle, true);
+    test_castle!(castling_Q_b_king, "Q", b_king_castle, false);
+    test_castle!(castling_Q_b_queen, "Q", b_queen_castle, false);
 
-    test_castle!(single_w_kingside, "8/8/8/8/8/8/8/8 w KQkq - 0 1", w_king_castle, true)
+    test_castle!(castling_q_w_king, "q", w_king_castle, false);
+    test_castle!(castling_q_w_queen, "q", w_queen_castle, false);
+    test_castle!(castling_q_b_king, "q", b_king_castle, false);
+    test_castle!(castling_q_b_queen, "q", b_queen_castle, true);
+
+    test_castle!(castling_KQ_w_king, "KQ", w_king_castle, true);
+    test_castle!(caslting_KQ_w_queen, "KQ", w_queen_castle, true);
+    test_castle!(caslting_KQ_b_king, "KQ", b_king_castle, false);
+    test_castle!(caslting_KQ_b_queen, "KQ", b_queen_castle, false);
+
+    test_castle!(castling_Kk_w_king, "Kk", w_king_castle, true);
+    test_castle!(castling_Kk_w_queen, "Kk", w_queen_castle, false);
+    test_castle!(castling_Kk_b_king, "Kk", b_king_castle, true);
+    test_castle!(castling_Kk_b_queen, "Kk", b_queen_castle, false);
+
+    test_castle!(castling_Kq_w_king, "Kq", w_king_castle, true);
+    test_castle!(castling_Kq_w_queen, "Kq", w_queen_castle, false);
+    test_castle!(castling_Kq_b_king, "Kq", b_king_castle, false);
+    test_castle!(castling_Kq_b_queen, "Kq", b_queen_castle, true);
+
+    test_castle!(castling_Qk_w_king, "Qk", w_king_castle, false);
+    test_castle!(castling_Qk_w_queen, "Qk", w_queen_castle, true);
+    test_castle!(castling_Qk_b_king, "Qk", b_king_castle, true);
+    test_castle!(castling_Qk_b_queen, "Qk", b_queen_castle, false);
+
+    test_castle!(castling_Qq_w_king, "Qq", w_king_castle, false);
+    test_castle!(castling_Qq_w_queen, "Qq", w_queen_castle, true);
+    test_castle!(castling_Qq_b_king, "Qq", b_king_castle, false);
+    test_castle!(castling_Qq_b_queen, "Qq", b_queen_castle, true);
+
+    test_castle!(castling_qk_w_king, "qk", w_king_castle, false);
+    test_castle!(castling_qk_w_queen, "qk", w_queen_castle, false);
+    test_castle!(castling_qk_b_king, "qk", b_king_castle, true);
+    test_castle!(castling_qk_b_queen, "qk", b_queen_castle, true);
+
+    test_castle!(castling_KQk_w_king, "KQk", w_king_castle, true);
+    test_castle!(castling_KQk_w_queen, "KQk", w_queen_castle, true);
+    test_castle!(castling_KQk_b_king, "KQk", b_king_castle, true);
+    test_castle!(castling_KQk_b_queen, "KQk", b_queen_castle, false);
+
+    test_castle!(castling_KQq_w_king, "KQq", w_king_castle, true);
+    test_castle!(castling_KQq_w_queen, "KQq", w_queen_castle, true);
+    test_castle!(castling_KQq_b_king, "KQq", b_king_castle, false);
+    test_castle!(castling_KQq_b_queen, "KQq", b_queen_castle, true);
+
+    test_castle!(castling_Kkq_w_king, "Kkq", w_king_castle, true);
+    test_castle!(castling_Kkq_w_queen, "Kkq", w_queen_castle, false);
+    test_castle!(castling_Kkq_b_king, "Kkq", b_king_castle, true);
+    test_castle!(castling_Kkq_b_queen, "Kkq", b_queen_castle, true);
+
+    test_castle!(castling_Qkq_w_king, "Qkq", w_king_castle, false);
+    test_castle!(castling_Qkq_w_queen, "Qkq", w_queen_castle, true);
+    test_castle!(castling_Qkq_b_king, "Qkq", b_king_castle, true);
+    test_castle!(castling_Qkq_b_queen, "Qkq", b_queen_castle, true);
+
+    test_castle!(castling_KQkq_w_king, "KQkq", w_king_castle, true);
+    test_castle!(castling_KQkq_w_queen, "KQkq", w_queen_castle, true);
+    test_castle!(castling_KQkq_b_king, "KQkq", b_king_castle, true);
+    test_castle!(castling_KQkq_b_queen, "KQkq", b_queen_castle, true);
 }
