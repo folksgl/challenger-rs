@@ -68,9 +68,19 @@ impl Position {
         let hlf_clock = fen_tokens.next().unwrap();
         let full_num = fen_tokens.next().unwrap();
 
+        let mut parsed_passant_sq = 0;
+        if passant_sq.len() != 1 {
+            let mut chars = passant_sq.chars();
+            let file = chars.next().unwrap().to_digit(18).unwrap() - 9;
+            let mut rank = chars.next().unwrap().to_digit(10).unwrap();
+            rank = (rank - 1) * 8;
+            parsed_passant_sq = rank as u64 + file as u64;
+            parsed_passant_sq = 1 << (parsed_passant_sq - 1);
+        }
+
         Position {
             pieces: [0; 14],
-            passant_sq: 0,
+            passant_sq: parsed_passant_sq as u64,
             w_king_castle: castle_rights.contains("K"),
             w_queen_castle: castle_rights.contains("Q"),
             b_king_castle: castle_rights.contains("k"),
@@ -365,7 +375,7 @@ mod tests {
     }
 
     // Since passant square is finite and small, test all possible combniations
-    test_passant!(passant_none, "-", A_FILE & RANK_1);
+    test_passant!(passant_none, "-", 0);
 
     test_passant!(passant_a1, "a1", A_FILE & RANK_1);
     test_passant!(passant_b1, "b1", B_FILE & RANK_1);
@@ -426,7 +436,7 @@ mod tests {
     test_passant!(passant_c7, "c7", C_FILE & RANK_7);
     test_passant!(passant_d7, "d7", D_FILE & RANK_7);
     test_passant!(passant_e7, "e7", E_FILE & RANK_7);
-    test_passant!(passant_f7, "f7", F_FILE & RANK_1);
+    test_passant!(passant_f7, "f7", F_FILE & RANK_7);
     test_passant!(passant_g7, "g7", G_FILE & RANK_7);
     test_passant!(passant_h7, "h7", H_FILE & RANK_7);
 
