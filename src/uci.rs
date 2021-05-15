@@ -153,7 +153,8 @@ mod tests {
     test_invalid_command!(invalid_uci_10, "u ci");
     test_invalid_command!(invalid_uci_11, "$uci");
     test_invalid_command!(invalid_uci_12, "^uci");
-    test_invalid_command!(invalid_uci_13, "^uci");
+    test_invalid_command!(invalid_uci_13, "uci$");
+    test_invalid_command!(invalid_uci_14, "u\nci");
 
     // Valid debug
     test_valid_command!(valid_debug_1, "debug on");
