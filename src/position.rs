@@ -365,6 +365,8 @@ mod tests {
     }
 
     // Since passant square is finite and small, test all possible combniations
+    test_passant!(passant_none, "-", A_FILE & RANK_1);
+
     test_passant!(passant_a1, "a1", A_FILE & RANK_1);
     test_passant!(passant_b1, "b1", B_FILE & RANK_1);
     test_passant!(passant_c1, "c1", C_FILE & RANK_1);
@@ -436,4 +438,44 @@ mod tests {
     test_passant!(passant_f8, "f8", F_FILE & RANK_8);
     test_passant!(passant_g8, "g8", G_FILE & RANK_8);
     test_passant!(passant_h8, "h8", H_FILE & RANK_8);
+
+    // Test halfmove clock of Position construction
+    macro_rules! test_half_clock {
+        ($test_name:ident, $hlf_clock:expr, $expected:expr) => {
+            #[test]
+            fn $test_name() {
+                let fen = concat!("8/8/8/8/8/8/8/8 w - - ", $hlf_clock, " 1");
+                assert_eq!(Position::from(&fen).hlf_clock, $expected);
+            }
+        };
+    }
+
+    test_half_clock!(half_clock_1, "1", 1);
+    test_half_clock!(half_clock_2, "100", 100);
+    test_half_clock!(half_clock_3, "255", 255);
+    test_half_clock!(half_clock_4, "0", 0);
+    test_half_clock!(half_clock_5, "2", 2);
+    test_half_clock!(half_clock_6, "4", 4);
+    test_half_clock!(half_clock_7, "8", 8);
+    test_half_clock!(half_clock_8, "16", 16);
+
+    // Test halfmove clock of Position construction
+    macro_rules! test_full_number {
+        ($test_name:ident, $full_num:expr, $expected:expr) => {
+            #[test]
+            fn $test_name() {
+                let fen = concat!("8/8/8/8/8/8/8/8 w - - 0 ", $full_num);
+                assert_eq!(Position::from(&fen).hlf_clock, $expected);
+            }
+        };
+    }
+
+    test_full_number!(full_number_1, "1", 1);
+    test_full_number!(full_number_2, "100", 100);
+    test_full_number!(full_number_3, "255", 255);
+    test_full_number!(full_number_4, "0", 0);
+    test_full_number!(full_number_5, "2", 2);
+    test_full_number!(full_number_6, "4", 4);
+    test_full_number!(full_number_7, "8", 8);
+    test_full_number!(full_number_8, "16", 16);
 }
