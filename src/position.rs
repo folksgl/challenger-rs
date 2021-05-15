@@ -69,24 +69,56 @@ impl Position {
         let full_num = fen_tokens.next().unwrap();
 
         // Default to no passant sq
-        let mut parsed_passant_sq = 0;
+        let mut parsed_passant_sq: u64 = 0;
         if passant_sq.len() != 1 {
+            // The passant square bitboard is calculated by left shifting 1 by the square number of
+            // the en passant square.
             let mut chars = passant_sq.chars();
 
             // Convert 'a' => 1 ... 'h' => 8 by converting to base_18 and subtracting 9.
             let file = chars.next().unwrap().to_digit(18).unwrap() - 9;
             let mut rank = chars.next().unwrap().to_digit(10).unwrap();
-
-            // Convert the rank/file into a square number
             rank = (rank - 1) * 8;
-            parsed_passant_sq = rank as u64 + file as u64;
 
-            // Square number -> bitboard
-            parsed_passant_sq = 1 << (parsed_passant_sq - 1);
+            parsed_passant_sq = 1 << ((rank + file) - 1);
+        }
+
+        let piece_string = pieces.split('/').flat_map(|x| x.chars().rev());
+        let mut square_num: isize = 63;
+        let mut bitboards = [0; 14];
+
+        for piece in piece_string {
+            match piece {
+                'P' => bitboards[W_PAWN] |= sq_to_bitboard(square_num),
+                'R' => bitboards[W_ROOK] |= sq_to_bitboard(square_num),
+                'N' => bitboards[W_KNIGHT] |= sq_to_bitboard(square_num),
+                'B' => bitboards[W_BISHOP] |= sq_to_bitboard(square_num),
+                'Q' => bitboards[W_QUEEN] |= sq_to_bitboard(square_num),
+                'K' => bitboards[W_KING] |= sq_to_bitboard(square_num),
+                'p' => bitboards[B_PAWN] |= sq_to_bitboard(square_num),
+                'r' => bitboards[B_ROOK] |= sq_to_bitboard(square_num),
+                'n' => bitboards[B_KNIGHT] |= sq_to_bitboard(square_num),
+                'b' => bitboards[B_BISHOP] |= sq_to_bitboard(square_num),
+                'q' => bitboards[B_QUEEN] |= sq_to_bitboard(square_num),
+                'k' => bitboards[B_KING] |= sq_to_bitboard(square_num),
+                '2' => square_num -= 1,
+                '3' => square_num -= 2,
+                '4' => square_num -= 3,
+                '5' => square_num -= 4,
+                '6' => square_num -= 5,
+                '7' => square_num -= 6,
+                '8' => square_num -= 7,
+                _ => (),
+            }
+            square_num -= 1
+        }
+        for i in 0..6 {
+            bitboards[W_PIECES] |= bitboards[i];
+            bitboards[B_PIECES] |= bitboards[i + 7];
         }
 
         Position {
-            pieces: [0; 14],
+            pieces: bitboards,
             passant_sq: parsed_passant_sq,
             w_king_castle: castle_rights.contains("K"),
             w_queen_castle: castle_rights.contains("Q"),
@@ -97,6 +129,11 @@ impl Position {
             full_num: full_num.parse().unwrap(),
         }
     }
+}
+
+const fn sq_to_bitboard(sq_num: isize) -> u64 {
+    let result: u64 = 1;
+    result << sq_num
 }
 
 #[cfg(test)]
@@ -149,7 +186,8 @@ mod tests {
     test_pieces!(empty_b_pieces, empty_pos, W_PAWN, 0);
 
     // 'complex_pos' positions are found here: https://www.chessprogramming.org/Perft_Results
-    const complex_pos_2: &str = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -";
+    const complex_pos_2: &str =
+        "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
 
     test_pieces!(complex2_w_pawn, complex_pos_2, W_PAWN, 0x81000E700);
     test_pieces!(complex2_w_rook, complex_pos_2, W_ROOK, 0x81);
@@ -157,7 +195,7 @@ mod tests {
     test_pieces!(complex2_w_bishop, complex_pos_2, W_BISHOP, 0x1800);
     test_pieces!(complex2_w_queen, complex_pos_2, W_QUEEN, 0x200000);
     test_pieces!(complex2_w_king, complex_pos_2, W_KING, 0x10);
-    test_pieces!(complex2_w_pieces, complex_pos_2, W_PIECES, 0x181023FF91);
+    test_pieces!(complex2_w_pieces, complex_pos_2, W_PIECES, 0x181024FF91);
     test_pieces!(complex2_b_pawn, complex_pos_2, B_PAWN, 0x2D500002800000);
     test_pieces!(complex2_b_rook, complex_pos_2, B_ROOK, 0x8100000000000000);
     test_pieces!(complex2_b_knight, complex_pos_2, B_KNIGHT, 0x220000000000);
@@ -171,7 +209,7 @@ mod tests {
         0x917D730002800000
     );
 
-    const complex_pos_3: &str = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -";
+    const complex_pos_3: &str = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1";
 
     test_pieces!(complex3_w_pawn, complex_pos_3, W_PAWN, 0x200005000);
     test_pieces!(complex3_w_rook, complex_pos_3, W_ROOK, 0x2000000);
@@ -243,7 +281,7 @@ mod tests {
     );
 
     const complex_pos_6: &str =
-        "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0x 10";
+        "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10";
 
     test_pieces!(complex6_w_pawn, complex_pos_6, W_PAWN, 0x1009E600);
     test_pieces!(complex6_w_rook, complex_pos_6, W_ROOK, 0x21);
