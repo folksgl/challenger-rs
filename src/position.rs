@@ -87,6 +87,7 @@ mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;
 
+    // Test fen piece placement of Position construction
     macro_rules! test_pieces {
         ($test_name:ident, $fen:expr, $piece:expr, $expected:literal) => {
             #[test]
@@ -247,6 +248,7 @@ mod tests {
         0x61F62D1440000000
     );
 
+    // Test castling availability of Position construction
     macro_rules! test_castle {
         ($test_name:ident, $castle_rights:expr, $position_member:ident, $expected:literal) => {
             #[test]
@@ -337,4 +339,101 @@ mod tests {
     test_castle!(castling_KQkq_w_queen, "KQkq", w_queen_castle, true);
     test_castle!(castling_KQkq_b_king, "KQkq", b_king_castle, true);
     test_castle!(castling_KQkq_b_queen, "KQkq", b_queen_castle, true);
+
+    // Test active color of Position construction
+    #[test]
+    fn active_color_w() {
+        let fen = "8/8/8/8/8/8/8/8 w - - 0 1";
+        assert_eq!(Position::from(fen).is_white_move, true);
+    }
+
+    #[test]
+    fn active_color_b() {
+        let fen = "8/8/8/8/8/8/8/8 b - - 0 1";
+        assert_eq!(Position::from(fen).is_white_move, true);
+    }
+
+    // Test en passant square of Position construction
+    macro_rules! test_passant {
+        ($test_name:ident, $passant_sq:expr, $expected:expr) => {
+            #[test]
+            fn $test_name() {
+                let fen = concat!("8/8/8/8/8/8/8/8 w - ", $passant_sq, " 0 1");
+                assert_eq!(Position::from(&fen).passant_sq, $expected);
+            }
+        };
+    }
+
+    // Since passant square is finite and small, test all possible combniations
+    test_passant!(passant_a1, "a1", A_FILE & RANK_1);
+    test_passant!(passant_b1, "b1", B_FILE & RANK_1);
+    test_passant!(passant_c1, "c1", C_FILE & RANK_1);
+    test_passant!(passant_d1, "d1", D_FILE & RANK_1);
+    test_passant!(passant_e1, "e1", E_FILE & RANK_1);
+    test_passant!(passant_f1, "f1", F_FILE & RANK_1);
+    test_passant!(passant_g1, "g1", G_FILE & RANK_1);
+    test_passant!(passant_h1, "h1", H_FILE & RANK_1);
+
+    test_passant!(passant_a2, "a2", A_FILE & RANK_2);
+    test_passant!(passant_b2, "b2", B_FILE & RANK_2);
+    test_passant!(passant_c2, "c2", C_FILE & RANK_2);
+    test_passant!(passant_d2, "d2", D_FILE & RANK_2);
+    test_passant!(passant_e2, "e2", E_FILE & RANK_2);
+    test_passant!(passant_f2, "f2", F_FILE & RANK_2);
+    test_passant!(passant_g2, "g2", G_FILE & RANK_2);
+    test_passant!(passant_h2, "h2", H_FILE & RANK_2);
+
+    test_passant!(passant_a3, "a3", A_FILE & RANK_3);
+    test_passant!(passant_b3, "b3", B_FILE & RANK_3);
+    test_passant!(passant_c3, "c3", C_FILE & RANK_3);
+    test_passant!(passant_d3, "d3", D_FILE & RANK_3);
+    test_passant!(passant_e3, "e3", E_FILE & RANK_3);
+    test_passant!(passant_f3, "f3", F_FILE & RANK_3);
+    test_passant!(passant_g3, "g3", G_FILE & RANK_3);
+    test_passant!(passant_h3, "h3", H_FILE & RANK_3);
+
+    test_passant!(passant_a4, "a4", A_FILE & RANK_4);
+    test_passant!(passant_b4, "b4", B_FILE & RANK_4);
+    test_passant!(passant_c4, "c4", C_FILE & RANK_4);
+    test_passant!(passant_d4, "d4", D_FILE & RANK_4);
+    test_passant!(passant_e4, "e4", E_FILE & RANK_4);
+    test_passant!(passant_f4, "f4", F_FILE & RANK_4);
+    test_passant!(passant_g4, "g4", G_FILE & RANK_4);
+    test_passant!(passant_h4, "h4", H_FILE & RANK_4);
+
+    test_passant!(passant_a5, "a5", A_FILE & RANK_5);
+    test_passant!(passant_b5, "b5", B_FILE & RANK_5);
+    test_passant!(passant_c5, "c5", C_FILE & RANK_5);
+    test_passant!(passant_d5, "d5", D_FILE & RANK_5);
+    test_passant!(passant_e5, "e5", E_FILE & RANK_5);
+    test_passant!(passant_f5, "f5", F_FILE & RANK_5);
+    test_passant!(passant_g5, "g5", G_FILE & RANK_5);
+    test_passant!(passant_h5, "h5", H_FILE & RANK_5);
+
+    test_passant!(passant_a6, "a6", A_FILE & RANK_6);
+    test_passant!(passant_b6, "b6", B_FILE & RANK_6);
+    test_passant!(passant_c6, "c6", C_FILE & RANK_6);
+    test_passant!(passant_d6, "d6", D_FILE & RANK_6);
+    test_passant!(passant_e6, "e6", E_FILE & RANK_6);
+    test_passant!(passant_f6, "f6", F_FILE & RANK_6);
+    test_passant!(passant_g6, "g6", G_FILE & RANK_6);
+    test_passant!(passant_h6, "h6", H_FILE & RANK_6);
+
+    test_passant!(passant_a7, "a7", A_FILE & RANK_7);
+    test_passant!(passant_b7, "b7", B_FILE & RANK_7);
+    test_passant!(passant_c7, "c7", C_FILE & RANK_7);
+    test_passant!(passant_d7, "d7", D_FILE & RANK_7);
+    test_passant!(passant_e7, "e7", E_FILE & RANK_7);
+    test_passant!(passant_f7, "f7", F_FILE & RANK_1);
+    test_passant!(passant_g7, "g7", G_FILE & RANK_7);
+    test_passant!(passant_h7, "h7", H_FILE & RANK_7);
+
+    test_passant!(passant_a8, "a8", A_FILE & RANK_8);
+    test_passant!(passant_b8, "b8", B_FILE & RANK_8);
+    test_passant!(passant_c8, "c8", C_FILE & RANK_8);
+    test_passant!(passant_d8, "d8", D_FILE & RANK_8);
+    test_passant!(passant_e8, "e8", E_FILE & RANK_8);
+    test_passant!(passant_f8, "f8", F_FILE & RANK_8);
+    test_passant!(passant_g8, "g8", G_FILE & RANK_8);
+    test_passant!(passant_h8, "h8", H_FILE & RANK_8);
 }
