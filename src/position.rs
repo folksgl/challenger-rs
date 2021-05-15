@@ -76,8 +76,8 @@ impl Position {
             b_king_castle: true,
             b_queen_castle: true,
             is_white_move: true,
-            hlf_clock: 0,
-            full_num: 0,
+            hlf_clock: hlf_clock.parse().unwrap(),
+            full_num: full_num.parse().unwrap(),
         }
     }
 }
@@ -465,17 +465,17 @@ mod tests {
             #[test]
             fn $test_name() {
                 let fen = concat!("8/8/8/8/8/8/8/8 w - - 0 ", $full_num);
-                assert_eq!(Position::from(&fen).hlf_clock, $expected);
+                assert_eq!(Position::from(&fen).full_num, $expected);
             }
         };
     }
 
-    test_full_number!(full_number_1, "1", 1);
-    test_full_number!(full_number_2, "100", 100);
-    test_full_number!(full_number_3, "255", 255);
+    test_full_number!(full_number_1, "2", 2);
+    test_full_number!(full_number_2, "101", 101);
+    test_full_number!(full_number_3, "254", 254);
     test_full_number!(full_number_4, "0", 0);
-    test_full_number!(full_number_5, "2", 2);
-    test_full_number!(full_number_6, "4", 4);
-    test_full_number!(full_number_7, "8", 8);
-    test_full_number!(full_number_8, "16", 16);
+    test_full_number!(full_number_5, "3", 3);
+    test_full_number!(full_number_6, "5", 5);
+    test_full_number!(full_number_7, "9", 9);
+    test_full_number!(full_number_8, "17", 17);
 }
