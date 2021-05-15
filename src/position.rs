@@ -68,19 +68,26 @@ impl Position {
         let hlf_clock = fen_tokens.next().unwrap();
         let full_num = fen_tokens.next().unwrap();
 
+        // Default to no passant sq
         let mut parsed_passant_sq = 0;
         if passant_sq.len() != 1 {
             let mut chars = passant_sq.chars();
+
+            // Convert 'a' => 1 ... 'h' => 8 by converting to base_18 and subtracting 9.
             let file = chars.next().unwrap().to_digit(18).unwrap() - 9;
             let mut rank = chars.next().unwrap().to_digit(10).unwrap();
+
+            // Convert the rank/file into a square number
             rank = (rank - 1) * 8;
             parsed_passant_sq = rank as u64 + file as u64;
+
+            // Square number -> bitboard
             parsed_passant_sq = 1 << (parsed_passant_sq - 1);
         }
 
         Position {
             pieces: [0; 14],
-            passant_sq: parsed_passant_sq as u64,
+            passant_sq: parsed_passant_sq,
             w_king_castle: castle_rights.contains("K"),
             w_queen_castle: castle_rights.contains("Q"),
             b_king_castle: castle_rights.contains("k"),
