@@ -75,7 +75,7 @@ impl Position {
             w_queen_castle: castle_rights.contains("Q"),
             b_king_castle: castle_rights.contains("k"),
             b_queen_castle: castle_rights.contains("q"),
-            is_white_move: true,
+            is_white_move: active_color == "w",
             hlf_clock: hlf_clock.parse().unwrap(),
             full_num: full_num.parse().unwrap(),
         }
@@ -350,7 +350,7 @@ mod tests {
     #[test]
     fn active_color_b() {
         let fen = "8/8/8/8/8/8/8/8 b - - 0 1";
-        assert_eq!(Position::from(fen).is_white_move, true);
+        assert_eq!(Position::from(fen).is_white_move, false);
     }
 
     // Test en passant square of Position construction
@@ -459,7 +459,7 @@ mod tests {
     test_half_clock!(half_clock_7, "8", 8);
     test_half_clock!(half_clock_8, "16", 16);
 
-    // Test halfmove clock of Position construction
+    // Test fullmove number of Position construction
     macro_rules! test_full_number {
         ($test_name:ident, $full_num:expr, $expected:expr) => {
             #[test]
