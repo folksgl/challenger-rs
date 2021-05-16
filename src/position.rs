@@ -136,6 +136,7 @@ impl Position {
             full_num,
         }
     }
+
     pub fn new() -> Position {
         Position::from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
     }
