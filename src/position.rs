@@ -61,46 +61,30 @@ impl Position {
     pub fn from(fen: &str) -> Position {
         let mut fen_tokens = fen.split_whitespace();
 
-        let pieces = fen_tokens.next().unwrap();
-        let active_color = fen_tokens.next().unwrap();
-        let castle_rights = fen_tokens.next().unwrap();
-        let passant_sq = fen_tokens.next().unwrap();
-        let hlf_clock = fen_tokens.next().unwrap();
-        let full_num = fen_tokens.next().unwrap();
+        // Fen string: Piece positions
+        let piece_string = fen_tokens
+            .next()
+            .unwrap()
+            .split('/')
+            .flat_map(|x| x.chars().rev());
 
-        // Default to no passant sq
-        let mut parsed_passant_sq: u64 = 0;
-        if passant_sq.len() != 1 {
-            // The passant square bitboard is calculated by left shifting 1 by the square number of
-            // the en passant square.
-            let mut chars = passant_sq.chars();
-
-            // Convert 'a' => 1 ... 'h' => 8 by converting to base_18 and subtracting 9.
-            let file = chars.next().unwrap().to_digit(18).unwrap() - 9;
-            let mut rank = chars.next().unwrap().to_digit(10).unwrap();
-            rank = (rank - 1) * 8;
-
-            parsed_passant_sq = 1 << ((rank + file) - 1);
-        }
-
-        let piece_string = pieces.split('/').flat_map(|x| x.chars().rev());
         let mut square_num: isize = 63;
-        let mut bitboards = [0; 14];
+        let mut pieces = [0; 14];
 
         for piece in piece_string {
             match piece {
-                'P' => bitboards[W_PAWN] |= sq_to_bitboard(square_num),
-                'R' => bitboards[W_ROOK] |= sq_to_bitboard(square_num),
-                'N' => bitboards[W_KNIGHT] |= sq_to_bitboard(square_num),
-                'B' => bitboards[W_BISHOP] |= sq_to_bitboard(square_num),
-                'Q' => bitboards[W_QUEEN] |= sq_to_bitboard(square_num),
-                'K' => bitboards[W_KING] |= sq_to_bitboard(square_num),
-                'p' => bitboards[B_PAWN] |= sq_to_bitboard(square_num),
-                'r' => bitboards[B_ROOK] |= sq_to_bitboard(square_num),
-                'n' => bitboards[B_KNIGHT] |= sq_to_bitboard(square_num),
-                'b' => bitboards[B_BISHOP] |= sq_to_bitboard(square_num),
-                'q' => bitboards[B_QUEEN] |= sq_to_bitboard(square_num),
-                'k' => bitboards[B_KING] |= sq_to_bitboard(square_num),
+                'P' => pieces[W_PAWN] |= 1u64 << square_num,
+                'R' => pieces[W_ROOK] |= 1u64 << square_num,
+                'N' => pieces[W_KNIGHT] |= 1u64 << square_num,
+                'B' => pieces[W_BISHOP] |= 1u64 << square_num,
+                'Q' => pieces[W_QUEEN] |= 1u64 << square_num,
+                'K' => pieces[W_KING] |= 1u64 << square_num,
+                'p' => pieces[B_PAWN] |= 1u64 << square_num,
+                'r' => pieces[B_ROOK] |= 1u64 << square_num,
+                'n' => pieces[B_KNIGHT] |= 1u64 << square_num,
+                'b' => pieces[B_BISHOP] |= 1u64 << square_num,
+                'q' => pieces[B_QUEEN] |= 1u64 << square_num,
+                'k' => pieces[B_KING] |= 1u64 << square_num,
                 '2' => square_num -= 1,
                 '3' => square_num -= 2,
                 '4' => square_num -= 3,
@@ -113,27 +97,52 @@ impl Position {
             square_num -= 1
         }
         for i in 0..6 {
-            bitboards[W_PIECES] |= bitboards[i];
-            bitboards[B_PIECES] |= bitboards[i + 7];
+            pieces[W_PIECES] |= pieces[i];
+            pieces[B_PIECES] |= pieces[i + 7];
         }
 
+        // Fen string: Active color
+        let is_white_move = fen_tokens.next().unwrap() == "w";
+
+        // Fen string: Castling availability
+        let castle_rights = fen_tokens.next().unwrap();
+
+        // Fen string: En passant target square
+        let passant_sq_str = fen_tokens.next().unwrap();
+
+        // Default to no passant sq
+        let mut passant_sq: u64 = 0;
+        if passant_sq_str.len() != 1 {
+            let mut chars = passant_sq_str.chars();
+            let file = chars.next().unwrap();
+            let rank = chars.next().unwrap();
+            passant_sq = sq_to_bitboard(file, rank);
+        }
+
+        // Fen string: Halfmove clock
+        let hlf_clock = fen_tokens.next().unwrap().parse().unwrap();
+
+        // Fen string: Fullmove number
+        let full_num = fen_tokens.next().unwrap().parse().unwrap();
+
         Position {
-            pieces: bitboards,
-            passant_sq: parsed_passant_sq,
+            pieces,
+            passant_sq,
             w_king_castle: castle_rights.contains('K'),
             w_queen_castle: castle_rights.contains('Q'),
             b_king_castle: castle_rights.contains('k'),
             b_queen_castle: castle_rights.contains('q'),
-            is_white_move: active_color == "w",
-            hlf_clock: hlf_clock.parse().unwrap(),
-            full_num: full_num.parse().unwrap(),
+            is_white_move,
+            hlf_clock,
+            full_num,
         }
     }
 }
 
-const fn sq_to_bitboard(sq_num: isize) -> u64 {
-    let result: u64 = 1;
-    result << sq_num
+fn sq_to_bitboard(file: char, rank: char) -> u64 {
+    let file_squares = file.to_digit(18).unwrap() - 9;
+    let rank_squares = (rank.to_digit(10).unwrap() - 1) * 8;
+    1u64 << (rank_squares + file_squares - 1)
 }
 
 #[cfg(test)]
@@ -533,4 +542,23 @@ mod tests {
     test_full_number!(full_number_6, "5", 5);
     test_full_number!(full_number_7, "9", 9);
     test_full_number!(full_number_8, "17", 17);
+
+    // Test sq_to_bitboard
+    macro_rules! test_sq_to_bb {
+        ($test_name:ident, $file:expr, $rank:expr, $expected:expr) => {
+            #[test]
+            fn $test_name() {
+                assert_eq!(sq_to_bitboard($file, $rank), $expected);
+            }
+        };
+    }
+
+    test_sq_to_bb!(sq_to_bitboard_a1, 'a', '1', A_FILE & RANK_1);
+    test_sq_to_bb!(sq_to_bitboard_b2, 'b', '2', B_FILE & RANK_2);
+    test_sq_to_bb!(sq_to_bitboard_c3, 'c', '3', C_FILE & RANK_3);
+    test_sq_to_bb!(sq_to_bitboard_d4, 'd', '4', D_FILE & RANK_4);
+    test_sq_to_bb!(sq_to_bitboard_e5, 'e', '5', E_FILE & RANK_5);
+    test_sq_to_bb!(sq_to_bitboard_f6, 'f', '6', F_FILE & RANK_6);
+    test_sq_to_bb!(sq_to_bitboard_g7, 'g', '7', G_FILE & RANK_7);
+    test_sq_to_bb!(sq_to_bitboard_h8, 'h', '8', H_FILE & RANK_8);
 }
