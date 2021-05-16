@@ -140,6 +140,32 @@ impl Position {
     pub fn new() -> Position {
         Position::from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
     }
+
+    pub fn evaluate(self) -> isize {
+        if self.pieces[W_KING] == 0 {
+            return isize::MIN;
+        }
+        if self.pieces[B_KING] == 0 {
+            return isize::MAX;
+        }
+
+        let mut white_evaluation = 0;
+        let mut black_evaluation = 0;
+
+        white_evaluation += self.pieces[W_PAWN].count_ones() * 100;
+        white_evaluation += self.pieces[W_ROOK].count_ones() * 350;
+        white_evaluation += self.pieces[W_KNIGHT].count_ones() * 350;
+        white_evaluation += self.pieces[W_BISHOP].count_ones() * 525;
+        white_evaluation += self.pieces[W_QUEEN].count_ones() * 1000;
+
+        black_evaluation += self.pieces[B_PAWN].count_ones() * 100;
+        black_evaluation += self.pieces[B_ROOK].count_ones() * 350;
+        black_evaluation += self.pieces[B_KNIGHT].count_ones() * 350;
+        black_evaluation += self.pieces[B_BISHOP].count_ones() * 525;
+        black_evaluation += self.pieces[B_QUEEN].count_ones() * 1000;
+
+        white_evaluation as isize - black_evaluation as isize
+    }
 }
 
 fn sq_to_bitboard(file: char, rank: char) -> u64 {
