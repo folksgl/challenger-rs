@@ -8,7 +8,7 @@ pub struct GameState {
 impl GameState {
     pub fn from() -> GameState {
         GameState {
-            game_position: position::Position::from(),
+            game_position: position::Position::new(),
             debug: false,
         }
     }
