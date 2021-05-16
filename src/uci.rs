@@ -51,22 +51,23 @@ impl Command {
     }
 }
 
+lazy_static! {
+    static ref UCI_REGEX_SET: RegexSet = RegexSet::new(&[
+        r"^(?:uci|isready|ucinewgame|stop|ponderhit)$",
+        r"^debug (?:on|off)$",
+        r"^position (?:startpos|(?:[rnbqkp12345678RNBQKP]{1,8}/){7}[rnbqkp12345678RNBQKP]{1,8} (w|b) (?:-|[KQkq]{1,4}) (?:-|[a-h][1-8]) (?:\d)+ (?:\d)+)(?: moves(?: [a-h][1-8][a-h][1-8][rnbqRNBQ]?)+)?$",
+        r"^go(?: ponder| infinite| (?:wtime|btime|winc|binc|movestogo|depth|nodes|mate|movetime) [\d]+| searchmoves(?: [a-h][1-8][a-h][1-8][rnbqRNBQ]?)+)*$",
+        r"^setoption [[:word:]]+(?: value [[:word:]]+)?$"
+    ]).unwrap();
+}
+
 // Validate that the input is a well-formed UCI command string. Return the
 // command tokens in a vector, or Err() if invalid.
 fn validate_input_string(input: &str) -> Result<String, &str> {
     let input = input.trim();
 
     // Match the input against known Universal Chess Interface (UCI) commands
-    let uci_regex_set =
-            RegexSet::new(&[
-                r"^(?:uci|isready|ucinewgame|stop|ponderhit)$",
-                r"^debug (?:on|off)$",
-                r"^position (?:startpos|(?:[rnbqkp12345678RNBQKP]{1,8}/){7}[rnbqkp12345678RNBQKP]{1,8} (w|b) (?:-|[KQkq]{1,4}) (?:-|[a-h][1-8]) (?:\d)+ (?:\d)+)(?: moves(?: [a-h][1-8][a-h][1-8][rnbqRNBQ]?)+)?$",
-                r"^go(?: ponder| infinite| (?:wtime|btime|winc|binc|movestogo|depth|nodes|mate|movetime) [\d]+| searchmoves(?: [a-h][1-8][a-h][1-8][rnbqRNBQ]?)+)*$",
-                r"^setoption [[:word:]]+(?: value [[:word:]]+)?$"
-            ]).unwrap();
-
-    if uci_regex_set.is_match(&input) {
+    if UCI_REGEX_SET.is_match(&input) {
         Ok(String::from(input))
     } else {
         Err("Command failed UCI regex validation")
