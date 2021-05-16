@@ -42,6 +42,7 @@ const B_QUEEN: usize = 11;
 const B_KING: usize = 12;
 const B_PIECES: usize = 13;
 
+#[derive(Debug, PartialEq)]
 pub struct Position {
     pieces: [u64; 14], // Bitboards
     passant_sq: u64,   // En Passant square
@@ -134,6 +135,9 @@ impl Position {
             hlf_clock,
             full_num,
         }
+    }
+    pub fn new() -> Position {
+        Position::from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
     }
 }
 
@@ -559,4 +563,38 @@ mod tests {
     test_sq_to_bb!(sq_to_bitboard_f6, 'f', '6', F_FILE & RANK_6);
     test_sq_to_bb!(sq_to_bitboard_g7, 'g', '7', G_FILE & RANK_7);
     test_sq_to_bb!(sq_to_bitboard_h8, 'h', '8', H_FILE & RANK_8);
+
+    #[test]
+    fn new_returns_startpos() {
+        let start_position = Position::new();
+        let expected = Position {
+            pieces: [
+                0x000000000000FF00,
+                0x0000000000000081,
+                0x0000000000000042,
+                0x0000000000000024,
+                0x0000000000000008,
+                0x0000000000000010,
+                0x000000000000FFFF,
+                0x00FF000000000000,
+                0x8100000000000000,
+                0x4200000000000000,
+                0x2400000000000000,
+                0x0800000000000000,
+                0x1000000000000000,
+                0xFFFF000000000000,
+            ],
+            passant_sq: 0, // En Passant square
+
+            w_king_castle: true,
+            w_queen_castle: true,
+            b_king_castle: true,
+            b_queen_castle: true,
+
+            is_white_move: true,
+            hlf_clock: 0,
+            full_num: 1,
+        };
+        assert_eq!(start_position, expected);
+    }
 }
