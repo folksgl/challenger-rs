@@ -114,9 +114,7 @@ impl Position {
         let mut passant_sq: u64 = 0;
         if passant_sq_str.len() != 1 {
             let mut chars = passant_sq_str.chars();
-            let file = chars.next().unwrap();
-            let rank = chars.next().unwrap();
-            passant_sq = sq_to_bitboard(file, rank);
+            passant_sq = sq_to_bitboard(chars.next().unwrap(), chars.next().unwrap());
         }
 
         // Fen string: Halfmove clock
