@@ -6,7 +6,7 @@
 use crate::gamestate;
 
 use regex::RegexSet;
-use std::io;
+use std::io::Write;
 use std::sync::mpsc;
 use std::thread;
 
@@ -36,13 +36,13 @@ impl Command {
     }
 
     // Execute the challenger-specific logic for a given UCI command.
-    fn execute(&self, game_state: &mut gamestate::GameState) {
+    fn execute(&self, game_state: &mut gamestate::GameState, string_buf: &mut Vec<u8>) {
         let tokens = self.tokens();
         match tokens[0] {
-            "uci" => println!("id name Challenger\nid author folksgl\nuciok"),
+            "uci" => writeln!(string_buf, "id name Challenger\nid author folksgl\nuciok").unwrap(),
             "debug" => game_state.debug = tokens[1] == "on",
-            "isready" => println!("readyok"),
-            _ => println!("something else"),
+            "isready" => writeln!(string_buf, "readyok").unwrap(),
+            _ => writeln!(string_buf, "something else").unwrap(),
         }
     }
 
@@ -79,7 +79,7 @@ fn validate_input_string(input: &str) -> Result<String, &str> {
 fn producer(tx: mpsc::Sender<Command>) {
     loop {
         let mut buffer = String::new();
-        io::stdin().read_line(&mut buffer).unwrap();
+        std::io::stdin().read_line(&mut buffer).unwrap();
 
         let input = buffer.trim();
 
@@ -104,7 +104,9 @@ fn consumer(rx: mpsc::Receiver<Command>) {
     let mut game_state = gamestate::GameState::from();
 
     for command in rx {
-        command.execute(&mut game_state);
+        let mut string_buf: Vec<u8> = Vec::new();
+        command.execute(&mut game_state, &mut string_buf);
+        print!("{:?}", String::from_utf8(string_buf));
     }
 }
 
@@ -554,8 +556,9 @@ mod tests {
 
     // Convienience function for executing a command on a given GameState
     fn run_command(game_state: &mut gamestate::GameState, command_str: &str) {
+        let mut string_buf: Vec<u8> = Vec::new();
         let command = Command::from(command_str).expect("Invalid test string provided");
-        command.execute(game_state);
+        command.execute(game_state, &mut string_buf);
     }
 
     #[test]
