@@ -576,4 +576,26 @@ mod tests {
 
         assert_eq!(game_state.debug, false);
     }
+
+    // Test command execution output
+    macro_rules! test_execute_output {
+        ($test_name:ident, $input_str:literal, $expected:expr) => {
+            #[test]
+            fn $test_name() {
+                let mut game_state = gamestate::GameState::from();
+                let mut string_buf: Vec<u8> = Vec::new();
+                let command = Command::from($input_str).expect("Invalid test string provided");
+                command.execute(&mut game_state, &mut string_buf);
+                assert_eq!(String::from_utf8(string_buf).unwrap(), $expected)
+            }
+        };
+    }
+
+    test_execute_output!(
+        test_output_uci,
+        "uci",
+        "id name Challenger\nid author folksgl\nuciok\n"
+    );
+
+    test_execute_output!(test_output_isready, "isready", "readyok\n");
 }
