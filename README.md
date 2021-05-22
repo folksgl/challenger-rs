@@ -1,6 +1,6 @@
 ![](.github/img/challenger.svg)
 
-[![Tests](https://github.com/folksgl/challenger-rs/actions/workflows/test.yaml/badge.svg)](https://github.com/folksgl/challenger-rs/actions/workflows/test.yaml)
+[![Tests](https://github.com/folksgl/challenger-rs/actions/workflows/rust-checks.yaml/badge.svg)](https://github.com/folksgl/challenger-rs/actions/workflows/rust-checks.yaml)
 ![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)
 
 Challenger is my own custom chess engine. Challenger-rs is a re-designed version
