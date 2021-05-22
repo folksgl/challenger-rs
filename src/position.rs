@@ -624,4 +624,22 @@ mod tests {
         };
         assert_eq!(start_position, expected);
     }
+
+    #[test]
+    fn evaluate_startpos() {
+        let pos = Position::new();
+        assert_eq!(pos.evaluate(), 0);
+    }
+
+    #[test]
+    fn evaluate_no_w_king() {
+        let pos = Position::from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQ1BNR w KQkq - 0 1");
+        assert_eq!(pos.evaluate(), isize::MIN);
+    }
+
+    #[test]
+    fn evaluate_no_b_king() {
+        let pos = Position::from("rnbq1bnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+        assert_eq!(pos.evaluate(), isize::MAX);
+    }
 }
