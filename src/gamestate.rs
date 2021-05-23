@@ -12,6 +12,10 @@ impl GameState {
             debug: false,
         }
     }
+
+    pub fn reset_game(&mut self) {
+        self.game_position = position::Position::new();
+    }
 }
 
 #[cfg(test)]
