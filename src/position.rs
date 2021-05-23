@@ -42,7 +42,7 @@ const B_QUEEN: usize = 11;
 const B_KING: usize = 12;
 const B_PIECES: usize = 13;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Position {
     pieces: [u64; 14], // Bitboards
     passant_sq: u64,   // En Passant square
@@ -139,6 +139,10 @@ impl Position {
 
     pub fn new() -> Position {
         Position::from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+    }
+
+    pub fn play_move(&mut self, _move_string: &str) {
+        self.pieces = [0; 14];
     }
 
     pub fn evaluate(self) -> isize {
