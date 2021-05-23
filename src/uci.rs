@@ -106,7 +106,7 @@ fn consumer(rx: mpsc::Receiver<Command>) {
     for command in rx {
         let mut string_buf: Vec<u8> = Vec::new();
         command.execute(&mut game_state, &mut string_buf);
-        print!("{:?}", String::from_utf8(string_buf));
+        print!("{}", String::from_utf8(string_buf).unwrap());
     }
 }
 
