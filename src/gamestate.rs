@@ -1,7 +1,7 @@
 use crate::position;
 
 pub struct GameState {
-    game_position: position::Position,
+    pub game_position: position::Position,
     pub debug: bool,
 }
 
