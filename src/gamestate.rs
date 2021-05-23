@@ -1,12 +1,12 @@
 use crate::position;
 
 pub struct GameState {
-    game_position: position::Position,
+    pub game_position: position::Position,
     pub debug: bool,
 }
 
 impl GameState {
-    pub fn from() -> GameState {
+    pub fn new() -> GameState {
         GameState {
             game_position: position::Position::new(),
             debug: false,
@@ -20,7 +20,7 @@ mod tests {
 
     #[test]
     fn test_set_debug_on() {
-        let mut game_state = GameState::from();
+        let mut game_state = GameState::new();
         game_state.debug = true;
 
         assert_eq!(game_state.debug, true);
@@ -28,7 +28,7 @@ mod tests {
 
     #[test]
     fn test_set_debug_off() {
-        let mut game_state = GameState::from();
+        let mut game_state = GameState::new();
         game_state.debug = false;
 
         assert_eq!(game_state.debug, false);

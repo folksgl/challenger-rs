@@ -3,7 +3,8 @@
 // outlined in http://wbec-ridderkerk.nl/html/UCIProtocol.html) into
 // challenger-specific logic for implementing them.
 
-use crate::gamestate;
+use crate::gamestate::GameState;
+use crate::position::Position;
 
 use regex::RegexSet;
 use std::io::Write;
@@ -36,12 +37,13 @@ impl Command {
     }
 
     // Execute the challenger-specific logic for a given UCI command.
-    fn execute(&self, game_state: &mut gamestate::GameState, string_buf: &mut Vec<u8>) {
+    fn execute(&self, game_state: &mut GameState, string_buf: &mut Vec<u8>) {
         let tokens = self.tokens();
         match tokens[0] {
             "uci" => writeln!(string_buf, "id name Challenger\nid author folksgl\nuciok").unwrap(),
             "debug" => game_state.debug = tokens[1] == "on",
             "isready" => writeln!(string_buf, "readyok").unwrap(),
+            "ucinewgame" => game_state.game_position = Position::new(),
             _ => writeln!(string_buf, "something else").unwrap(),
         }
     }
@@ -101,7 +103,7 @@ fn producer(tx: mpsc::Sender<Command>) {
 // "Consumes" Commands by reading from the mpsc::Receiver and executing
 // the received Command.
 fn consumer(rx: mpsc::Receiver<Command>) {
-    let mut game_state = gamestate::GameState::from();
+    let mut game_state = GameState::new();
 
     for command in rx {
         let mut string_buf: Vec<u8> = Vec::new();
@@ -555,7 +557,7 @@ mod tests {
     );
 
     // Convienience function for executing a command on a given GameState
-    fn run_command(game_state: &mut gamestate::GameState, command_str: &str) {
+    fn run_command(game_state: &mut GameState, command_str: &str) {
         let mut string_buf: Vec<u8> = Vec::new();
         let command = Command::from(command_str).expect("Invalid test string provided");
         command.execute(game_state, &mut string_buf);
@@ -563,7 +565,7 @@ mod tests {
 
     #[test]
     fn command_set_debug_on() {
-        let mut game_state = gamestate::GameState::from();
+        let mut game_state = GameState::new();
         run_command(&mut game_state, "debug on");
 
         assert_eq!(game_state.debug, true);
@@ -571,7 +573,7 @@ mod tests {
 
     #[test]
     fn command_set_debug_off() {
-        let mut game_state = gamestate::GameState::from();
+        let mut game_state = GameState::new();
         run_command(&mut game_state, "debug off");
 
         assert_eq!(game_state.debug, false);
@@ -582,7 +584,7 @@ mod tests {
         ($test_name:ident, $input_str:literal, $expected:expr) => {
             #[test]
             fn $test_name() {
-                let mut game_state = gamestate::GameState::from();
+                let mut game_state = GameState::new();
                 let mut string_buf: Vec<u8> = Vec::new();
                 let command = Command::from($input_str).expect("Invalid test string provided");
                 command.execute(&mut game_state, &mut string_buf);
