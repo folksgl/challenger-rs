@@ -141,7 +141,10 @@ impl Position {
         Position::from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
     }
 
-    pub fn play_move(&mut self, _move_string: &str) {
+    pub fn play_move(&mut self, move_string: &str) {
+        let mut move_chars = move_string.chars();
+        let start_square = sq_to_bitboard(move_chars.next().unwrap(), move_chars.next().unwrap());
+        let dest_square = sq_to_bitboard(move_chars.next().unwrap(), move_chars.next().unwrap());
         self.pieces = [0; 14];
     }
 
@@ -595,6 +598,7 @@ mod tests {
     test_sq_to_bb!(sq_to_bitboard_g7, 'g', '7', G_FILE & RANK_7);
     test_sq_to_bb!(sq_to_bitboard_h8, 'h', '8', H_FILE & RANK_8);
 
+    // Position::new test
     #[test]
     fn new_returns_startpos() {
         let start_position = Position::new();
@@ -629,6 +633,7 @@ mod tests {
         assert_eq!(start_position, expected);
     }
 
+    // Evaluation testing
     #[test]
     fn evaluate_startpos() {
         let pos = Position::new();
@@ -646,4 +651,241 @@ mod tests {
         let pos = Position::from("rnbq1bnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
         assert_eq!(pos.evaluate(), isize::MAX);
     }
+
+    // Position::play_move() testing
+    macro_rules! test_play_move {
+        ($test_name:ident, $starting_position:expr, $move:expr, $expected:expr) => {
+            #[test]
+            fn $test_name() {
+                let mut starting_position = Position::from($starting_position);
+                let expected_position = Position::from($expected);
+                starting_position.play_move($move);
+                assert_eq!(starting_position, expected_position);
+            }
+        };
+    }
+
+    // Basic movement tests
+    const startpos_b: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1";
+
+    test_play_move!(
+        play_startpos_a2a3,
+        startpos,
+        "a2a3",
+        "rnbqkbnr/pppppppp/8/8/8/P7/1PPPPPPP/RNBQKBNR b KQkq - 0 1"
+    ); // startpos w_pawn advance 1
+    test_play_move!(
+        play_startpos_a2a4,
+        startpos,
+        "a2a4",
+        "rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR b KQkq a3 0 1"
+    ); // startpos w_pawn advance 2
+    test_play_move!(
+        play_startpos_a7a6,
+        startpos_b,
+        "a7a6",
+        "rnbqkbnr/1ppppppp/p7/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 2"
+    ); // startpos b_pawn advance 1
+    test_play_move!(
+        play_startpos_a7a5,
+        startpos_b,
+        "a7a5",
+        "rnbqkbnr/1ppppppp/8/p7/8/8/PPPPPPPP/RNBQKBNR w KQkq a6 0 2"
+    ); // startpos b_pawn advance 2
+    test_play_move!(
+        play_random_w_pawn_forward_1,
+        "nKn5/8/Q2P1bpp/NP2P3/bR6/4pP2/7k/8 w - - 0 1",
+        "d6d7",
+        "nKn5/3P4/Q4bpp/NP2P3/bR6/4pP2/7k/8 b - - 0 1"
+    ); // Random position w_pawn advance 1
+    test_play_move!(
+        play_random_b_pawn_forward_1,
+        "7Q/4k1pb/1P1p4/4r3/pP1Rp1K1/5pb1/4P2p/8 b - - 0 1",
+        "d6d5",
+        "7Q/4k1pb/1P6/3pr3/pP1Rp1K1/5pb1/4P2p/8 w - - 0 2"
+    ); // Random position b_pawn advance 1
+    test_play_move!(
+        play_random_w_pawn_forward_2,
+        "4Q3/P6p/7p/pPk4P/p7/2P3Pp/q4P2/3b2K1 w - - 0 1",
+        "f2f4",
+        "4Q3/P6p/7p/pPk4P/p4P2/2P3Pp/q7/3b2K1 b - f3 0 1"
+    ); // Random position w_pawn advance 2
+    test_play_move!(
+        play_random_b_pawn_forward_2,
+        "3b4/2B1p3/2p5/Pq1N3p/p2N2k1/p3K2p/5P2/2R5 b - - 0 1",
+        "e7e5",
+        "3b4/2B5/2p5/Pq1Np2p/p2N2k1/p3K2p/5P2/2R5 w - e6 0 2"
+    ); // Random position b_pawn advance 2
+    test_play_move!(
+        play_startpos_b1c3,
+        startpos,
+        "b1c3",
+        "rnbqkbnr/pppppppp/8/8/8/2N5/PPPPPPPP/R1BQKBNR b KQkq - 1 1"
+    ); // w_knight initial move
+    test_play_move!(
+        play_startpos_b8c6,
+        startpos_b,
+        "b8c6",
+        "r1bqkbnr/pppppppp/2n5/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 1 2"
+    ); // b_knight initial move
+    test_play_move!(
+        play_w_bishop_move,
+        "rnbqkbnr/pppppppp/8/8/8/5B2/PPPPPPPP/RNBQK1NR w KQkq - 0 1",
+        "f3d5",
+        "rnbqkbnr/pppppppp/8/3B4/8/8/PPPPPPPP/RNBQK1NR b KQkq - 1 1"
+    ); // w_bishop move
+    test_play_move!(
+        play_b_bishop_move,
+        "rnbqk1nr/pppppppp/5b2/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1",
+        "f6d4",
+        "rnbqk1nr/pppppppp/8/8/3b4/8/PPPPPPPP/RNBQKBNR w KQkq - 1 2"
+    ); // b_bishop move
+    test_play_move!(
+        play_w_rook_move,
+        "rnbqkbnr/pppppppp/8/8/7R/8/PPPPPPPP/RNBQKBN1 w KQkq - 0 1",
+        "h4a4",
+        "rnbqkbnr/pppppppp/8/8/R7/8/PPPPPPPP/RNBQKBN1 b KQkq - 1 1"
+    ); // w_rook move
+    test_play_move!(
+        play_b_rook_move,
+        "rnbqkbn1/pppppppp/8/7r/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1",
+        "h5a5",
+        "rnbqkbn1/pppppppp/8/r7/8/8/PPPPPPPP/RNBQKBNR w KQkq - 1 2"
+    ); // b_rook move
+    test_play_move!(
+        play_w_queen_move,
+        "rnbqkbnr/pppppppp/8/8/8/3Q4/PPPPPPPP/RNB1KBNR w KQkq - 0 1",
+        "d3h3",
+        "rnbqkbnr/pppppppp/8/8/8/7Q/PPPPPPPP/RNB1KBNR b KQkq - 1 1"
+    ); // w_queen move
+    test_play_move!(
+        play_b_queen_move,
+        "rnb1kbnr/pppppppp/3q4/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1",
+        "d6h6",
+        "rnb1kbnr/pppppppp/7q/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 1 2"
+    ); // b_queen move
+    test_play_move!(
+        play_w_king_move,
+        "rnbqkbnr/pppppppp/8/8/4K3/8/PPPPPPPP/RNBQ1BNR w KQkq - 0 1",
+        "e4f5",
+        "rnbqkbnr/pppppppp/8/5K2/8/8/PPPPPPPP/RNBQ1BNR b KQkq - 1 1"
+    ); // w_king move
+    test_play_move!(
+        play_b_king_move,
+        "rnbq1bnr/pppppppp/8/4k3/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1",
+        "e5f4",
+        "rnbq1bnr/pppppppp/8/8/5k2/8/PPPPPPPP/RNBQKBNR w KQkq - 1 2"
+    ); // b_king move
+
+    // Capture tests
+    test_play_move!(
+        play_basic_w_pawn_capture,
+        "rnbqkbnr/pppppppp/4P3/8/8/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1",
+        "e6f7",
+        "rnbqkbnr/pppppPpp/8/8/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"
+    );
+    test_play_move!(
+        play_basic_b_pawn_capture,
+        "rnbqkbnr/pppp1ppp/8/8/8/4p3/PPPPPPPP/RNBQKBNR b KQkq - 0 1",
+        "e3f2",
+        "rnbqkbnr/pppp1ppp/8/8/8/8/PPPPPpPP/RNBQKBNR w KQkq - 0 2"
+    );
+    test_play_move!(
+        play_w_pawn_capture_passant,
+        "rnbqkbnr/ppppp1pp/8/4Pp2/8/8/PPPP1PPP/RNBQKBNR w KQkq f6 0 1",
+        "e5f6",
+        "rnbqkbnr/ppppp1pp/5P2/8/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"
+    );
+    test_play_move!(
+        play_b_pawn_capture_passant,
+        "rnbqkbnr/pppp1ppp/8/8/4pP2/8/PPPPP1PP/RNBQKBNR b KQkq f3 0 1",
+        "e4f3",
+        "rnbqkbnr/pppp1ppp/8/8/8/5p2/PPPPP1PP/RNBQKBNR w KQkq - 0 2"
+    );
+    test_play_move!(
+        play_basic_w_knight_capture,
+        "rnbqkb1r/pppppppp/5n2/8/4N3/8/PPPPPPPP/RNBQKB1R w KQkq - 0 1",
+        "e4f6",
+        "rnbqkb1r/pppppppp/5N2/8/8/8/PPPPPPPP/RNBQKB1R b KQkq - 0 1"
+    );
+    test_play_move!(
+        play_basic_b_knight_capture,
+        "rnbqkb1r/pppppppp/5n2/8/4N3/8/PPPPPPPP/RNBQKB1R b KQkq - 0 1",
+        "f6e4",
+        "rnbqkb1r/pppppppp/8/8/4n3/8/PPPPPPPP/RNBQKB1R w KQkq - 0 2"
+    );
+    test_play_move!(
+        play_basic_w_bishop_capture,
+        "rn1qkbnr/pppppppp/2b5/8/8/5B2/PPPPPPPP/RNBQK1NR w KQkq - 0 1",
+        "f3c6",
+        "rn1qkbnr/pppppppp/2B5/8/8/8/PPPPPPPP/RNBQK1NR b KQkq - 0 1"
+    );
+    test_play_move!(
+        play_basic_b_bishop_capture,
+        "rn1qkbnr/pppppppp/2b5/8/8/5B2/PPPPPPPP/RNBQK1NR b KQkq - 0 1",
+        "c6f3",
+        "rn1qkbnr/pppppppp/8/8/8/5b2/PPPPPPPP/RNBQK1NR w KQkq - 0 2"
+    );
+    test_play_move!(
+        play_basic_w_rook_capture,
+        "rnbqkbn1/pppppppp/7r/8/8/7R/PPPPPPPP/RNBQKBN1 w KQkq - 0 1",
+        "h3h6",
+        "rnbqkbn1/pppppppp/7R/8/8/8/PPPPPPPP/RNBQKBN1 b KQkq - 0 1"
+    );
+    test_play_move!(
+        play_basic_b_rook_capture,
+        "rnbqkbn1/pppppppp/7r/8/8/7R/PPPPPPPP/RNBQKBN1 b KQkq - 0 1",
+        "h6h3",
+        "rnbqkbn1/pppppppp/8/8/8/7r/PPPPPPPP/RNBQKBN1 w KQkq - 0 2"
+    );
+    test_play_move!(
+        play_basic_w_queen_capture,
+        "rnb1kbnr/pppppppp/5q2/8/8/2Q5/PPPPPPPP/RNB1KBNR w KQkq - 0 1",
+        "c3f6",
+        "rnb1kbnr/pppppppp/5Q2/8/8/8/PPPPPPPP/RNB1KBNR b KQkq - 0 1"
+    );
+    test_play_move!(
+        play_basic_b_queen_capture,
+        "rnb1kbnr/pppppppp/5q2/8/8/2Q5/PPPPPPPP/RNB1KBNR b KQkq - 0 1",
+        "f6c3",
+        "rnb1kbnr/pppppppp/8/8/8/2q5/PPPPPPPP/RNB1KBNR w KQkq - 0 2"
+    );
+    test_play_move!(
+        play_basic_w_king_capture,
+        "rnbq1bnr/pppppppp/8/4k3/4K3/8/PPPPPPPP/RNBQ1BNR w KQkq - 0 1",
+        "e4e5",
+        "rnbq1bnr/pppppppp/8/4K3/8/8/PPPPPPPP/RNBQ1BNR b KQkq - 0 1"
+    );
+    test_play_move!(
+        play_basic_b_king_capture,
+        "rnbq1bnr/pppppppp/8/4k3/4K3/8/PPPPPPPP/RNBQ1BNR b KQkq - 0 1",
+        "e5e4",
+        "rnbq1bnr/pppppppp/8/8/4k3/8/PPPPPPPP/RNBQ1BNR w KQkq - 0 2"
+    );
+
+    // Castling tests
+    test_play_move!(
+        play_castle_w_kingside,
+        "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1",
+        "e1g1",
+        "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R4RK1 b kq - 1 1"
+    );
+    test_play_move!(
+        play_castle_w_queenside,
+        "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1",
+        "e1c1",
+        "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/2KR3R b kq - 1 1"
+    );
+    test_play_move!(
+        play_castle_b_kingside,
+        "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R b KQkq - 0 1",
+        "e8g8",
+        "r4rk1/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQ - 1 1"
+    );
+    test_play_move!(
+        play_castle_b_queenside,
+        "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R b KQkq - 0 1",
+        "e8c8",
+        "2kr3r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQ - 1 1"
+    );
 }
