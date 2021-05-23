@@ -141,6 +141,16 @@ impl Position {
         Position::from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
     }
 
+    // The play_move() function attempts to play the requested move and apply the rules
+    // of chess to the board. It will not consider the legality of the move it is given,
+    // and will instead just apply regular chess logic to that move. For example, a king
+    // *could* jump across the board and capture a friendly piece with this function,
+    // however the castling rights for the side to play would still be removed, and the
+    // side to play would be toggled.
+    //
+    // The focus of the play_move function is speed instead of legality, as challenger
+    // has a strictly legal move generator. Moves from stdin could still supply the
+    // engine with illegal moves, in which case the engine will gladly play them.
     pub fn play_move(&mut self, move_string: &str) {
         let mut move_chars = move_string.chars();
         let start_square = sq_to_bitboard(move_chars.next().unwrap(), move_chars.next().unwrap());
