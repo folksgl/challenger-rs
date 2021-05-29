@@ -25,6 +25,8 @@ const RANK_6: u64 = 0x0000FF0000000000;
 const RANK_7: u64 = 0x00FF000000000000;
 const RANK_8: u64 = 0xFF00000000000000;
 
+const CORNERS: u64 = (RANK_1 | RANK_8) & (A_FILE | H_FILE);
+
 // Piece constants for indexing the 'pieces' field of a position
 const W_PAWN: usize = 0;
 const W_ROOK: usize = 1;
@@ -152,10 +154,116 @@ impl Position {
     // has a strictly legal move generator. Moves from stdin could still supply the
     // engine with illegal moves, in which case the engine will gladly play them.
     pub fn play_move(&mut self, move_string: &str) {
+        // Increment halfmove clock early. Resets will happen based on move played
+        self.hlf_clock += 1;
+        self.full_num += !self.is_white_move as u8;
+        self.is_white_move = !self.is_white_move;
+
         let mut move_chars = move_string.chars();
-        let start_square = sq_to_bitboard(move_chars.next().unwrap(), move_chars.next().unwrap());
-        let dest_square = sq_to_bitboard(move_chars.next().unwrap(), move_chars.next().unwrap());
-        self.pieces = [0; 14];
+
+        let start_sq_num = sq_num(move_chars.next().unwrap(), move_chars.next().unwrap());
+        let dest_sq_num = sq_num(move_chars.next().unwrap(), move_chars.next().unwrap());
+        let start_square = 1u64 << start_sq_num;
+        let dest_square = 1u64 << dest_sq_num;
+        let sq_diff = start_sq_num as isize - dest_sq_num as isize;
+
+        let moving_bits = start_square | dest_square;
+
+        // If a capture is taking place, zero out the destination square
+        if (self.pieces[W_PIECES] | self.pieces[B_PIECES]) & dest_square != 0 {
+            let dest_zero_mask = !dest_square;
+            for piece in &mut self.pieces {
+                *piece &= dest_zero_mask;
+            }
+
+            self.hlf_clock = 0; // Reset halfmove clock on a capture
+        }
+
+        let moving_piece = self
+            .pieces
+            .iter()
+            .position(|&x| x & start_square != 0)
+            .unwrap();
+
+        let passant_prev = self.passant_sq;
+        self.passant_sq = 0;
+
+        match moving_piece {
+            W_PAWN | B_PAWN => {
+                if dest_square & passant_prev != 0 {
+                    let dest_zero = if moving_piece == W_PAWN {
+                        !(dest_square >> 8)
+                    } else {
+                        !(dest_square << 8)
+                    };
+                    self.pieces[W_PIECES] &= dest_zero;
+                    self.pieces[B_PIECES] &= dest_zero;
+                    self.pieces[W_PAWN] &= dest_zero;
+                    self.pieces[B_PAWN] &= dest_zero;
+                } else if sq_diff.abs() == 16 {
+                    self.passant_sq = 1u64 << ((start_sq_num + dest_sq_num) / 2);
+                } else if dest_square & (RANK_1 | RANK_8) != 0 {
+                    // Set the destination square bit in the pawn bitboard. It will
+                    // be unset when the moving_bits xor operation occurs.
+                    self.pieces[moving_piece] |= dest_square;
+
+                    // Set the promoted piece
+                    match move_chars.next().unwrap() {
+                        'Q' => self.pieces[W_QUEEN] |= dest_square,
+                        'q' => self.pieces[B_QUEEN] |= dest_square,
+                        'R' => self.pieces[W_ROOK] |= dest_square,
+                        'r' => self.pieces[B_ROOK] |= dest_square,
+                        'N' => self.pieces[W_KNIGHT] |= dest_square,
+                        'n' => self.pieces[B_KNIGHT] |= dest_square,
+                        'B' => self.pieces[W_BISHOP] |= dest_square,
+                        'b' => self.pieces[B_BISHOP] |= dest_square,
+                        _ => (),
+                    }
+                }
+                self.hlf_clock = 0;
+            }
+            W_KING => {
+                self.w_king_castle = false;
+                self.w_queen_castle = false;
+                if sq_diff == 2 {
+                    // Queenside Castling
+                    self.pieces[W_ROOK] ^= 0x0000000000000009;
+                    self.pieces[W_PIECES] ^= 0x0000000000000009;
+                } else if sq_diff == -2 {
+                    // Kingside Castling
+                    self.pieces[W_ROOK] ^= 0x00000000000000A0;
+                    self.pieces[W_PIECES] ^= 0x00000000000000A0;
+                }
+            }
+            B_KING => {
+                self.b_king_castle = false;
+                self.b_queen_castle = false;
+                if sq_diff == 2 {
+                    // Queenside Castling
+                    self.pieces[B_ROOK] ^= 0x0900000000000000;
+                    self.pieces[B_PIECES] ^= 0x0900000000000000;
+                } else if sq_diff == -2 {
+                    // Kingside Castling
+                    self.pieces[B_ROOK] ^= 0xA000000000000000;
+                    self.pieces[B_PIECES] ^= 0xA000000000000000;
+                }
+            }
+            W_ROOK | B_ROOK if start_square & CORNERS != 0 => match start_sq_num {
+                1 => self.w_queen_castle = false,
+                7 => self.w_king_castle = false,
+                56 => self.b_queen_castle = false,
+                63 => self.b_king_castle = false,
+                _ => (),
+            },
+            _ => (),
+        }
+
+        self.pieces[moving_piece] ^= moving_bits;
+        if moving_piece < 6 {
+            self.pieces[W_PIECES] ^= moving_bits;
+        } else {
+            self.pieces[B_PIECES] ^= moving_bits;
+        }
     }
 
     pub fn evaluate(self) -> isize {
@@ -185,11 +293,15 @@ impl Position {
     }
 }
 
-fn sq_to_bitboard(file: char, rank: char) -> u64 {
-    let file_squares = file as u32 - 'a' as u32;
-    let rank_squares = (rank as u32 - '1' as u32) * 8;
-    1u64 << (rank_squares + file_squares)
+fn sq_num(file: char, rank: char) -> u32 {
+    (file as u32 - 'a' as u32) + ((rank as u32 - '1' as u32) * 8)
 }
+
+fn sq_to_bitboard(file: char, rank: char) -> u64 {
+    1u64 << sq_num(file, rank)
+}
+
+extern crate test;
 
 #[cfg(test)]
 mod tests {
@@ -778,13 +890,13 @@ mod tests {
         play_w_king_move,
         "rnbqkbnr/pppppppp/8/8/4K3/8/PPPPPPPP/RNBQ1BNR w KQkq - 0 1",
         "e4f5",
-        "rnbqkbnr/pppppppp/8/5K2/8/8/PPPPPPPP/RNBQ1BNR b KQkq - 1 1"
+        "rnbqkbnr/pppppppp/8/5K2/8/8/PPPPPPPP/RNBQ1BNR b kq - 1 1"
     ); // w_king move
     test_play_move!(
         play_b_king_move,
         "rnbq1bnr/pppppppp/8/4k3/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1",
         "e5f4",
-        "rnbq1bnr/pppppppp/8/8/5k2/8/PPPPPPPP/RNBQKBNR w KQkq - 1 2"
+        "rnbq1bnr/pppppppp/8/8/5k2/8/PPPPPPPP/RNBQKBNR w KQ - 1 2"
     ); // b_king move
 
     // Capture tests
@@ -864,13 +976,13 @@ mod tests {
         play_basic_w_king_capture,
         "rnbq1bnr/pppppppp/8/4k3/4K3/8/PPPPPPPP/RNBQ1BNR w KQkq - 0 1",
         "e4e5",
-        "rnbq1bnr/pppppppp/8/4K3/8/8/PPPPPPPP/RNBQ1BNR b KQkq - 0 1"
+        "rnbq1bnr/pppppppp/8/4K3/8/8/PPPPPPPP/RNBQ1BNR b kq - 0 1"
     );
     test_play_move!(
         play_basic_b_king_capture,
         "rnbq1bnr/pppppppp/8/4k3/4K3/8/PPPPPPPP/RNBQ1BNR b KQkq - 0 1",
         "e5e4",
-        "rnbq1bnr/pppppppp/8/8/4k3/8/PPPPPPPP/RNBQ1BNR w KQkq - 0 2"
+        "rnbq1bnr/pppppppp/8/8/4k3/8/PPPPPPPP/RNBQ1BNR w KQ - 0 2"
     );
 
     // Castling tests
@@ -890,12 +1002,61 @@ mod tests {
         play_castle_b_kingside,
         "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R b KQkq - 0 1",
         "e8g8",
-        "r4rk1/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQ - 1 1"
+        "r4rk1/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQ - 1 2"
     );
     test_play_move!(
         play_castle_b_queenside,
         "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R b KQkq - 0 1",
         "e8c8",
-        "2kr3r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQ - 1 1"
+        "2kr3r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQ - 1 2"
+    );
+    test_play_move!(
+        play_w_pawn_q_promotion,
+        "rnbqkbnr/pPpppppp/8/8/8/8/P1PPPPPP/RNBQKBNR w - - 0 1",
+        "b7c8Q",
+        "rnQqkbnr/p1pppppp/8/8/8/8/P1PPPPPP/RNBQKBNR b - - 0 1"
+    );
+    test_play_move!(
+        play_w_pawn_r_promotion,
+        "rnbqkbnr/pPpppppp/8/8/8/8/P1PPPPPP/RNBQKBNR w - - 0 1",
+        "b7c8R",
+        "rnRqkbnr/p1pppppp/8/8/8/8/P1PPPPPP/RNBQKBNR b - - 0 1"
+    );
+    test_play_move!(
+        play_w_pawn_n_promotion,
+        "rnbqkbnr/pPpppppp/8/8/8/8/P1PPPPPP/RNBQKBNR w - - 0 1",
+        "b7c8N",
+        "rnNqkbnr/p1pppppp/8/8/8/8/P1PPPPPP/RNBQKBNR b - - 0 1"
+    );
+    test_play_move!(
+        play_w_pawn_b_promotion,
+        "rnbqkbnr/pPpppppp/8/8/8/8/P1PPPPPP/RNBQKBNR w - - 0 1",
+        "b7c8B",
+        "rnBqkbnr/p1pppppp/8/8/8/8/P1PPPPPP/RNBQKBNR b - - 0 1"
+    );
+
+    test_play_move!(
+        play_b_pawn_q_promotion,
+        "rnbqkbnr/p1pppppp/8/8/8/8/PpPPPPPP/RNBQKBNR b - - 0 1",
+        "b2c1q",
+        "rnbqkbnr/p1pppppp/8/8/8/8/P1PPPPPP/RNqQKBNR w - - 0 2"
+    );
+    test_play_move!(
+        play_b_pawn_r_promotion,
+        "rnbqkbnr/p1pppppp/8/8/8/8/PpPPPPPP/RNBQKBNR b - - 0 1",
+        "b2c1r",
+        "rnbqkbnr/p1pppppp/8/8/8/8/P1PPPPPP/RNrQKBNR w - - 0 2"
+    );
+    test_play_move!(
+        play_b_pawn_n_promotion,
+        "rnbqkbnr/p1pppppp/8/8/8/8/PpPPPPPP/RNBQKBNR b - - 0 1",
+        "b2c1n",
+        "rnbqkbnr/p1pppppp/8/8/8/8/P1PPPPPP/RNnQKBNR w - - 0 2"
+    );
+    test_play_move!(
+        play_b_pawn_b_promotion,
+        "rnbqkbnr/p1pppppp/8/8/8/8/PpPPPPPP/RNBQKBNR b - - 0 1",
+        "b2c1b",
+        "rnbqkbnr/p1pppppp/8/8/8/8/P1PPPPPP/RNbQKBNR w - - 0 2"
     );
 }
