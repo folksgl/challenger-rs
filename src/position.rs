@@ -301,8 +301,6 @@ fn sq_to_bitboard(file: char, rank: char) -> u64 {
     1u64 << sq_num(file, rank)
 }
 
-extern crate test;
-
 #[cfg(test)]
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
