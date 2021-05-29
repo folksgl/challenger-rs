@@ -173,9 +173,9 @@ impl Position {
 }
 
 fn sq_to_bitboard(file: char, rank: char) -> u64 {
-    let file_squares = file.to_digit(18).unwrap() - 9;
-    let rank_squares = (rank.to_digit(10).unwrap() - 1) * 8;
-    1u64 << (rank_squares + file_squares - 1)
+    let file_squares = file as u32 - 'a' as u32;
+    let rank_squares = (rank as u32 - '1' as u32) * 8;
+    1u64 << (rank_squares + file_squares)
 }
 
 #[cfg(test)]
