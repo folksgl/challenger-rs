@@ -293,11 +293,11 @@ impl Position {
     }
 }
 
-fn sq_num(file: char, rank: char) -> u32 {
+pub fn sq_num(file: char, rank: char) -> u32 {
     (file as u32 - 'a' as u32) + ((rank as u32 - '1' as u32) * 8)
 }
 
-fn sq_to_bitboard(file: char, rank: char) -> u64 {
+pub fn sq_to_bitboard(file: char, rank: char) -> u64 {
     1u64 << sq_num(file, rank)
 }
 
