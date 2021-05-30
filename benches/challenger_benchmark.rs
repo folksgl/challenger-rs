@@ -1,11 +1,11 @@
-use challenger_rs::position;
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use challenger_rs::position::Position;
+use criterion::{criterion_group, criterion_main, Criterion};
 
-pub fn criterion_benchmark(c: &mut Criterion) {
-    c.bench_function("sq_to_bitboard", |b| {
-        b.iter(|| position::sq_to_bitboard(black_box('a'), black_box('2')))
+pub fn play_move_pawn_single_forward(c: &mut Criterion) {
+    c.bench_function("play_move_pawn_single_forward", |b| {
+        b.iter(|| Position::new().play_move("a2a3"))
     });
 }
 
-criterion_group!(benches, criterion_benchmark);
-criterion_main!(benches);
+criterion_group!(play_move, play_move_pawn_single_forward);
+criterion_main!(play_move);
