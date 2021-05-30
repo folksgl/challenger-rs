@@ -5,6 +5,9 @@
 
 // FILE constants: bitboards representing their respective files of the board with
 // 1's set in the bit positions for the file, and 0's otherwise.
+
+use std::fmt;
+
 const A_FILE: u64 = 0x0101010101010101;
 const B_FILE: u64 = 0x0202020202020202;
 const C_FILE: u64 = 0x0404040404040404;
@@ -58,6 +61,27 @@ pub struct Position {
     is_white_move: bool, // Side to move
     hlf_clock: u8,       // Halfmove clock
     full_num: u8,        // Fullmove number
+}
+
+impl fmt::Display for Position {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "pieces: [")?;
+        for (i, elem) in self.pieces.iter().enumerate() {
+            if i != 0 {
+                write!(f, ", ")?;
+            }
+            write!(f, "{}", elem)?;
+        }
+        write!(f, "], ")?;
+        write!(f, "passant: {}, ", self.passant_sq)?;
+        write!(f, "w_king_castle {}, ", self.w_king_castle)?;
+        write!(f, "w_queen_castle {}, ", self.w_queen_castle)?;
+        write!(f, "b_king_castle {}, ", self.b_king_castle)?;
+        write!(f, "b_queen_castle {}, ", self.b_queen_castle)?;
+        write!(f, "is_white_move {}, ", self.is_white_move)?;
+        write!(f, "hlf_clock {}, ", self.hlf_clock)?;
+        write!(f, "full_num {}", self.full_num)
+    }
 }
 
 impl Position {
