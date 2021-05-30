@@ -293,11 +293,11 @@ impl Position {
     }
 }
 
-fn sq_num(file: char, rank: char) -> u32 {
+pub fn sq_num(file: char, rank: char) -> u32 {
     (file as u32 - 'a' as u32) + ((rank as u32 - '1' as u32) * 8)
 }
 
-fn sq_to_bitboard(file: char, rank: char) -> u64 {
+pub fn sq_to_bitboard(file: char, rank: char) -> u64 {
     1u64 << sq_num(file, rank)
 }
 
@@ -316,154 +316,154 @@ mod tests {
         };
     }
 
-    const startpos: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    const STARTPOS: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-    test_pieces!(startpos_w_pawn, startpos, W_PAWN, 0x000000000000FF00);
-    test_pieces!(startpos_w_rook, startpos, W_ROOK, 0x0000000000000081);
-    test_pieces!(startpos_w_knight, startpos, W_KNIGHT, 0x0000000000000042);
-    test_pieces!(startpos_w_bishop, startpos, W_BISHOP, 0x0000000000000024);
-    test_pieces!(startpos_w_queen, startpos, W_QUEEN, 0x0000000000000008);
-    test_pieces!(startpos_w_king, startpos, W_KING, 0x0000000000000010);
-    test_pieces!(startpos_w_pieces, startpos, W_PIECES, 0x000000000000FFFF);
-    test_pieces!(startpos_b_pawn, startpos, B_PAWN, 0x00FF000000000000);
-    test_pieces!(startpos_b_rook, startpos, B_ROOK, 0x8100000000000000);
-    test_pieces!(startpos_b_knight, startpos, B_KNIGHT, 0x4200000000000000);
-    test_pieces!(startpos_b_bishop, startpos, B_BISHOP, 0x2400000000000000);
-    test_pieces!(startpos_b_queen, startpos, B_QUEEN, 0x0800000000000000);
-    test_pieces!(startpos_b_king, startpos, B_KING, 0x1000000000000000);
-    test_pieces!(startpos_b_pieces, startpos, B_PIECES, 0xFFFF000000000000);
+    test_pieces!(startpos_w_pawn, STARTPOS, W_PAWN, 0x000000000000FF00);
+    test_pieces!(startpos_w_rook, STARTPOS, W_ROOK, 0x0000000000000081);
+    test_pieces!(startpos_w_knight, STARTPOS, W_KNIGHT, 0x0000000000000042);
+    test_pieces!(startpos_w_bishop, STARTPOS, W_BISHOP, 0x0000000000000024);
+    test_pieces!(startpos_w_queen, STARTPOS, W_QUEEN, 0x0000000000000008);
+    test_pieces!(startpos_w_king, STARTPOS, W_KING, 0x0000000000000010);
+    test_pieces!(startpos_w_pieces, STARTPOS, W_PIECES, 0x000000000000FFFF);
+    test_pieces!(startpos_b_pawn, STARTPOS, B_PAWN, 0x00FF000000000000);
+    test_pieces!(startpos_b_rook, STARTPOS, B_ROOK, 0x8100000000000000);
+    test_pieces!(startpos_b_knight, STARTPOS, B_KNIGHT, 0x4200000000000000);
+    test_pieces!(startpos_b_bishop, STARTPOS, B_BISHOP, 0x2400000000000000);
+    test_pieces!(startpos_b_queen, STARTPOS, B_QUEEN, 0x0800000000000000);
+    test_pieces!(startpos_b_king, STARTPOS, B_KING, 0x1000000000000000);
+    test_pieces!(startpos_b_pieces, STARTPOS, B_PIECES, 0xFFFF000000000000);
 
-    const empty_pos: &str = "8/8/8/8/8/8/8/8 w KQkq - 0 1";
+    const EMPTY_POS: &str = "8/8/8/8/8/8/8/8 w KQkq - 0 1";
 
-    test_pieces!(empty_w_pawn, empty_pos, W_PAWN, 0);
-    test_pieces!(empty_w_rook, empty_pos, W_PAWN, 0);
-    test_pieces!(empty_w_knight, empty_pos, W_PAWN, 0);
-    test_pieces!(empty_w_bishop, empty_pos, W_PAWN, 0);
-    test_pieces!(empty_w_queen, empty_pos, W_PAWN, 0);
-    test_pieces!(empty_w_king, empty_pos, W_PAWN, 0);
-    test_pieces!(empty_w_pieces, empty_pos, W_PAWN, 0);
-    test_pieces!(empty_b_pawn, empty_pos, W_PAWN, 0);
-    test_pieces!(empty_b_rook, empty_pos, W_PAWN, 0);
-    test_pieces!(empty_b_knight, empty_pos, W_PAWN, 0);
-    test_pieces!(empty_b_bishop, empty_pos, W_PAWN, 0);
-    test_pieces!(empty_b_queen, empty_pos, W_PAWN, 0);
-    test_pieces!(empty_b_king, empty_pos, W_PAWN, 0);
-    test_pieces!(empty_b_pieces, empty_pos, W_PAWN, 0);
+    test_pieces!(empty_w_pawn, EMPTY_POS, W_PAWN, 0);
+    test_pieces!(empty_w_rook, EMPTY_POS, W_PAWN, 0);
+    test_pieces!(empty_w_knight, EMPTY_POS, W_PAWN, 0);
+    test_pieces!(empty_w_bishop, EMPTY_POS, W_PAWN, 0);
+    test_pieces!(empty_w_queen, EMPTY_POS, W_PAWN, 0);
+    test_pieces!(empty_w_king, EMPTY_POS, W_PAWN, 0);
+    test_pieces!(empty_w_pieces, EMPTY_POS, W_PAWN, 0);
+    test_pieces!(empty_b_pawn, EMPTY_POS, W_PAWN, 0);
+    test_pieces!(empty_b_rook, EMPTY_POS, W_PAWN, 0);
+    test_pieces!(empty_b_knight, EMPTY_POS, W_PAWN, 0);
+    test_pieces!(empty_b_bishop, EMPTY_POS, W_PAWN, 0);
+    test_pieces!(empty_b_queen, EMPTY_POS, W_PAWN, 0);
+    test_pieces!(empty_b_king, EMPTY_POS, W_PAWN, 0);
+    test_pieces!(empty_b_pieces, EMPTY_POS, W_PAWN, 0);
 
     // 'complex_pos' positions are found here: https://www.chessprogramming.org/Perft_Results
-    const complex_pos_2: &str =
+    const COMPLEX_POS_2: &str =
         "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
 
-    test_pieces!(complex2_w_pawn, complex_pos_2, W_PAWN, 0x81000E700);
-    test_pieces!(complex2_w_rook, complex_pos_2, W_ROOK, 0x81);
-    test_pieces!(complex2_w_knight, complex_pos_2, W_KNIGHT, 0x1000040000);
-    test_pieces!(complex2_w_bishop, complex_pos_2, W_BISHOP, 0x1800);
-    test_pieces!(complex2_w_queen, complex_pos_2, W_QUEEN, 0x200000);
-    test_pieces!(complex2_w_king, complex_pos_2, W_KING, 0x10);
-    test_pieces!(complex2_w_pieces, complex_pos_2, W_PIECES, 0x181024FF91);
-    test_pieces!(complex2_b_pawn, complex_pos_2, B_PAWN, 0x2D500002800000);
-    test_pieces!(complex2_b_rook, complex_pos_2, B_ROOK, 0x8100000000000000);
-    test_pieces!(complex2_b_knight, complex_pos_2, B_KNIGHT, 0x220000000000);
-    test_pieces!(complex2_b_bishop, complex_pos_2, B_BISHOP, 0x40010000000000);
-    test_pieces!(complex2_b_queen, complex_pos_2, B_QUEEN, 0x0010000000000000);
-    test_pieces!(complex2_b_king, complex_pos_2, B_KING, 0x1000000000000000);
+    test_pieces!(complex2_w_pawn, COMPLEX_POS_2, W_PAWN, 0x81000E700);
+    test_pieces!(complex2_w_rook, COMPLEX_POS_2, W_ROOK, 0x81);
+    test_pieces!(complex2_w_knight, COMPLEX_POS_2, W_KNIGHT, 0x1000040000);
+    test_pieces!(complex2_w_bishop, COMPLEX_POS_2, W_BISHOP, 0x1800);
+    test_pieces!(complex2_w_queen, COMPLEX_POS_2, W_QUEEN, 0x200000);
+    test_pieces!(complex2_w_king, COMPLEX_POS_2, W_KING, 0x10);
+    test_pieces!(complex2_w_pieces, COMPLEX_POS_2, W_PIECES, 0x181024FF91);
+    test_pieces!(complex2_b_pawn, COMPLEX_POS_2, B_PAWN, 0x2D500002800000);
+    test_pieces!(complex2_b_rook, COMPLEX_POS_2, B_ROOK, 0x8100000000000000);
+    test_pieces!(complex2_b_knight, COMPLEX_POS_2, B_KNIGHT, 0x220000000000);
+    test_pieces!(complex2_b_bishop, COMPLEX_POS_2, B_BISHOP, 0x40010000000000);
+    test_pieces!(complex2_b_queen, COMPLEX_POS_2, B_QUEEN, 0x0010000000000000);
+    test_pieces!(complex2_b_king, COMPLEX_POS_2, B_KING, 0x1000000000000000);
     test_pieces!(
         complex2_b_pieces,
-        complex_pos_2,
+        COMPLEX_POS_2,
         B_PIECES,
         0x917D730002800000
     );
 
-    const complex_pos_3: &str = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1";
+    const COMPLEX_POS_3: &str = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1";
 
-    test_pieces!(complex3_w_pawn, complex_pos_3, W_PAWN, 0x200005000);
-    test_pieces!(complex3_w_rook, complex_pos_3, W_ROOK, 0x2000000);
-    test_pieces!(complex3_w_knight, complex_pos_3, W_KNIGHT, 0);
-    test_pieces!(complex3_w_bishop, complex_pos_3, W_BISHOP, 0);
-    test_pieces!(complex3_w_queen, complex_pos_3, W_QUEEN, 0);
-    test_pieces!(complex3_w_king, complex_pos_3, W_KING, 0x100000000);
-    test_pieces!(complex3_w_pieces, complex_pos_3, W_PIECES, 0x302005000);
-    test_pieces!(complex3_b_pawn, complex_pos_3, B_PAWN, 0x4080020000000);
-    test_pieces!(complex3_b_rook, complex_pos_3, B_ROOK, 0x8000000000);
-    test_pieces!(complex3_b_knight, complex_pos_3, B_KNIGHT, 0);
-    test_pieces!(complex3_b_bishop, complex_pos_3, B_BISHOP, 0);
-    test_pieces!(complex3_b_queen, complex_pos_3, B_QUEEN, 0);
-    test_pieces!(complex3_b_king, complex_pos_3, B_KING, 0x80000000);
-    test_pieces!(complex3_b_pieces, complex_pos_3, B_PIECES, 0x40880A0000000);
+    test_pieces!(complex3_w_pawn, COMPLEX_POS_3, W_PAWN, 0x200005000);
+    test_pieces!(complex3_w_rook, COMPLEX_POS_3, W_ROOK, 0x2000000);
+    test_pieces!(complex3_w_knight, COMPLEX_POS_3, W_KNIGHT, 0);
+    test_pieces!(complex3_w_bishop, COMPLEX_POS_3, W_BISHOP, 0);
+    test_pieces!(complex3_w_queen, COMPLEX_POS_3, W_QUEEN, 0);
+    test_pieces!(complex3_w_king, COMPLEX_POS_3, W_KING, 0x100000000);
+    test_pieces!(complex3_w_pieces, COMPLEX_POS_3, W_PIECES, 0x302005000);
+    test_pieces!(complex3_b_pawn, COMPLEX_POS_3, B_PAWN, 0x4080020000000);
+    test_pieces!(complex3_b_rook, COMPLEX_POS_3, B_ROOK, 0x8000000000);
+    test_pieces!(complex3_b_knight, COMPLEX_POS_3, B_KNIGHT, 0);
+    test_pieces!(complex3_b_bishop, COMPLEX_POS_3, B_BISHOP, 0);
+    test_pieces!(complex3_b_queen, COMPLEX_POS_3, B_QUEEN, 0);
+    test_pieces!(complex3_b_king, COMPLEX_POS_3, B_KING, 0x80000000);
+    test_pieces!(complex3_b_pieces, COMPLEX_POS_3, B_PIECES, 0x40880A0000000);
 
-    const complex_pos_4: &str = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1";
+    const COMPLEX_POS_4: &str = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1";
 
-    test_pieces!(complex4_w_pawn, complex_pos_4, W_PAWN, 0x100021400C900);
-    test_pieces!(complex4_w_rook, complex_pos_4, W_ROOK, 0x21);
-    test_pieces!(complex4_w_knight, complex_pos_4, W_KNIGHT, 0x800000200000);
-    test_pieces!(complex4_w_bishop, complex_pos_4, W_BISHOP, 0x3000000);
-    test_pieces!(complex4_w_queen, complex_pos_4, W_QUEEN, 0x8);
-    test_pieces!(complex4_w_king, complex_pos_4, W_KING, 0x40);
-    test_pieces!(complex4_w_pieces, complex_pos_4, W_PIECES, 0x180021720C969);
-    test_pieces!(complex4_b_pawn, complex_pos_4, B_PAWN, 0xEE000000000200);
-    test_pieces!(complex4_b_rook, complex_pos_4, B_ROOK, 0x8100000000000000);
-    test_pieces!(complex4_b_knight, complex_pos_4, B_KNIGHT, 0x200100000000);
-    test_pieces!(complex4_b_bishop, complex_pos_4, B_BISHOP, 0x420000000000);
-    test_pieces!(complex4_b_queen, complex_pos_4, B_QUEEN, 0x10000);
-    test_pieces!(complex4_b_king, complex_pos_4, B_KING, 0x1000000000000000);
+    test_pieces!(complex4_w_pawn, COMPLEX_POS_4, W_PAWN, 0x100021400C900);
+    test_pieces!(complex4_w_rook, COMPLEX_POS_4, W_ROOK, 0x21);
+    test_pieces!(complex4_w_knight, COMPLEX_POS_4, W_KNIGHT, 0x800000200000);
+    test_pieces!(complex4_w_bishop, COMPLEX_POS_4, W_BISHOP, 0x3000000);
+    test_pieces!(complex4_w_queen, COMPLEX_POS_4, W_QUEEN, 0x8);
+    test_pieces!(complex4_w_king, COMPLEX_POS_4, W_KING, 0x40);
+    test_pieces!(complex4_w_pieces, COMPLEX_POS_4, W_PIECES, 0x180021720C969);
+    test_pieces!(complex4_b_pawn, COMPLEX_POS_4, B_PAWN, 0xEE000000000200);
+    test_pieces!(complex4_b_rook, COMPLEX_POS_4, B_ROOK, 0x8100000000000000);
+    test_pieces!(complex4_b_knight, COMPLEX_POS_4, B_KNIGHT, 0x200100000000);
+    test_pieces!(complex4_b_bishop, COMPLEX_POS_4, B_BISHOP, 0x420000000000);
+    test_pieces!(complex4_b_queen, COMPLEX_POS_4, B_QUEEN, 0x10000);
+    test_pieces!(complex4_b_king, COMPLEX_POS_4, B_KING, 0x1000000000000000);
     test_pieces!(
         complex4_b_pieces,
-        complex_pos_4,
+        COMPLEX_POS_4,
         B_PIECES,
         0x91EE620100010200
     );
 
-    const complex_pos_5: &str = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
+    const COMPLEX_POS_5: &str = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
 
-    test_pieces!(complex5_w_pawn, complex_pos_5, W_PAWN, 0x800000000C700);
-    test_pieces!(complex5_w_rook, complex_pos_5, W_ROOK, 0x81);
-    test_pieces!(complex5_w_knight, complex_pos_5, W_KNIGHT, 0x1002);
-    test_pieces!(complex5_w_bishop, complex_pos_5, W_BISHOP, 0x4000004);
-    test_pieces!(complex5_w_queen, complex_pos_5, W_QUEEN, 0x8);
-    test_pieces!(complex5_w_king, complex_pos_5, W_KING, 0x10);
-    test_pieces!(complex5_w_pieces, complex_pos_5, W_PIECES, 0x800000400D79F);
-    test_pieces!(complex5_b_pawn, complex_pos_5, B_PAWN, 0xE3040000000000);
-    test_pieces!(complex5_b_rook, complex_pos_5, B_ROOK, 0x8100000000000000);
+    test_pieces!(complex5_w_pawn, COMPLEX_POS_5, W_PAWN, 0x800000000C700);
+    test_pieces!(complex5_w_rook, COMPLEX_POS_5, W_ROOK, 0x81);
+    test_pieces!(complex5_w_knight, COMPLEX_POS_5, W_KNIGHT, 0x1002);
+    test_pieces!(complex5_w_bishop, COMPLEX_POS_5, W_BISHOP, 0x4000004);
+    test_pieces!(complex5_w_queen, COMPLEX_POS_5, W_QUEEN, 0x8);
+    test_pieces!(complex5_w_king, COMPLEX_POS_5, W_KING, 0x10);
+    test_pieces!(complex5_w_pieces, COMPLEX_POS_5, W_PIECES, 0x800000400D79F);
+    test_pieces!(complex5_b_pawn, COMPLEX_POS_5, B_PAWN, 0xE3040000000000);
+    test_pieces!(complex5_b_rook, COMPLEX_POS_5, B_ROOK, 0x8100000000000000);
     test_pieces!(
         complex5_b_knight,
-        complex_pos_5,
+        COMPLEX_POS_5,
         B_KNIGHT,
         0x200000000002000
     );
     test_pieces!(
         complex5_b_bishop,
-        complex_pos_5,
+        COMPLEX_POS_5,
         B_BISHOP,
         0x410000000000000
     );
-    test_pieces!(complex5_b_queen, complex_pos_5, B_QUEEN, 0x800000000000000);
-    test_pieces!(complex5_b_king, complex_pos_5, B_KING, 0x2000000000000000);
+    test_pieces!(complex5_b_queen, COMPLEX_POS_5, B_QUEEN, 0x800000000000000);
+    test_pieces!(complex5_b_king, COMPLEX_POS_5, B_KING, 0x2000000000000000);
     test_pieces!(
         complex5_b_pieces,
-        complex_pos_5,
+        COMPLEX_POS_5,
         B_PIECES,
         0xAFF3040000002000
     );
 
-    const complex_pos_6: &str =
+    const COMPLEX_POS_6: &str =
         "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10";
 
-    test_pieces!(complex6_w_pawn, complex_pos_6, W_PAWN, 0x1009E600);
-    test_pieces!(complex6_w_rook, complex_pos_6, W_ROOK, 0x21);
-    test_pieces!(complex6_w_knight, complex_pos_6, W_KNIGHT, 0x240000);
-    test_pieces!(complex6_w_bishop, complex_pos_6, W_BISHOP, 0x4004000000);
-    test_pieces!(complex6_w_queen, complex_pos_6, W_QUEEN, 0x1000);
-    test_pieces!(complex6_w_king, complex_pos_6, W_KING, 0x40);
-    test_pieces!(complex6_w_pieces, complex_pos_6, W_PIECES, 0x40142DF661);
-    test_pieces!(complex6_b_pawn, complex_pos_6, B_PAWN, 0xE6091000000000);
-    test_pieces!(complex6_b_rook, complex_pos_6, B_ROOK, 0x2100000000000000);
-    test_pieces!(complex6_b_knight, complex_pos_6, B_KNIGHT, 0x240000000000);
-    test_pieces!(complex6_b_bishop, complex_pos_6, B_BISHOP, 0x440000000);
-    test_pieces!(complex6_b_queen, complex_pos_6, B_QUEEN, 0x10000000000000);
-    test_pieces!(complex6_b_king, complex_pos_6, B_KING, 0x4000000000000000);
+    test_pieces!(complex6_w_pawn, COMPLEX_POS_6, W_PAWN, 0x1009E600);
+    test_pieces!(complex6_w_rook, COMPLEX_POS_6, W_ROOK, 0x21);
+    test_pieces!(complex6_w_knight, COMPLEX_POS_6, W_KNIGHT, 0x240000);
+    test_pieces!(complex6_w_bishop, COMPLEX_POS_6, W_BISHOP, 0x4004000000);
+    test_pieces!(complex6_w_queen, COMPLEX_POS_6, W_QUEEN, 0x1000);
+    test_pieces!(complex6_w_king, COMPLEX_POS_6, W_KING, 0x40);
+    test_pieces!(complex6_w_pieces, COMPLEX_POS_6, W_PIECES, 0x40142DF661);
+    test_pieces!(complex6_b_pawn, COMPLEX_POS_6, B_PAWN, 0xE6091000000000);
+    test_pieces!(complex6_b_rook, COMPLEX_POS_6, B_ROOK, 0x2100000000000000);
+    test_pieces!(complex6_b_knight, COMPLEX_POS_6, B_KNIGHT, 0x240000000000);
+    test_pieces!(complex6_b_bishop, COMPLEX_POS_6, B_BISHOP, 0x440000000);
+    test_pieces!(complex6_b_queen, COMPLEX_POS_6, B_QUEEN, 0x10000000000000);
+    test_pieces!(complex6_b_king, COMPLEX_POS_6, B_KING, 0x4000000000000000);
     test_pieces!(
         complex6_b_pieces,
-        complex_pos_6,
+        COMPLEX_POS_6,
         B_PIECES,
         0x61F62D1440000000
     );
@@ -485,80 +485,80 @@ mod tests {
     test_castle!(caslting_none_b_king, "-", b_king_castle, false);
     test_castle!(caslting_none_b_queen, "-", b_queen_castle, false);
 
-    test_castle!(castling_K_w_king, "K", w_king_castle, true);
-    test_castle!(caslting_K_w_queen, "K", w_queen_castle, false);
-    test_castle!(caslting_K_b_king, "K", b_king_castle, false);
-    test_castle!(caslting_K_b_queen, "K", b_queen_castle, false);
+    test_castle!(castling_0_w_king, "K", w_king_castle, true);
+    test_castle!(caslting_0_w_queen, "K", w_queen_castle, false);
+    test_castle!(caslting_0_b_king, "K", b_king_castle, false);
+    test_castle!(caslting_0_b_queen, "K", b_queen_castle, false);
 
-    test_castle!(castling_k_w_king, "k", w_king_castle, false);
-    test_castle!(castling_k_w_queen, "k", w_queen_castle, false);
-    test_castle!(castling_k_b_king, "k", b_king_castle, true);
-    test_castle!(castling_k_b_queen, "k", b_queen_castle, false);
+    test_castle!(castling_1_w_king, "k", w_king_castle, false);
+    test_castle!(castling_1_w_queen, "k", w_queen_castle, false);
+    test_castle!(castling_1_b_king, "k", b_king_castle, true);
+    test_castle!(castling_1_b_queen, "k", b_queen_castle, false);
 
-    test_castle!(castling_Q_w_king, "Q", w_king_castle, false);
-    test_castle!(castling_Q_w_queen, "Q", w_queen_castle, true);
-    test_castle!(castling_Q_b_king, "Q", b_king_castle, false);
-    test_castle!(castling_Q_b_queen, "Q", b_queen_castle, false);
+    test_castle!(castling_2_w_king, "Q", w_king_castle, false);
+    test_castle!(castling_2_w_queen, "Q", w_queen_castle, true);
+    test_castle!(castling_2_b_king, "Q", b_king_castle, false);
+    test_castle!(castling_2_b_queen, "Q", b_queen_castle, false);
 
-    test_castle!(castling_q_w_king, "q", w_king_castle, false);
-    test_castle!(castling_q_w_queen, "q", w_queen_castle, false);
-    test_castle!(castling_q_b_king, "q", b_king_castle, false);
-    test_castle!(castling_q_b_queen, "q", b_queen_castle, true);
+    test_castle!(castling_3_w_king, "q", w_king_castle, false);
+    test_castle!(castling_3_w_queen, "q", w_queen_castle, false);
+    test_castle!(castling_3_b_king, "q", b_king_castle, false);
+    test_castle!(castling_3_b_queen, "q", b_queen_castle, true);
 
-    test_castle!(castling_KQ_w_king, "KQ", w_king_castle, true);
-    test_castle!(caslting_KQ_w_queen, "KQ", w_queen_castle, true);
-    test_castle!(caslting_KQ_b_king, "KQ", b_king_castle, false);
-    test_castle!(caslting_KQ_b_queen, "KQ", b_queen_castle, false);
+    test_castle!(castling_4_w_king, "KQ", w_king_castle, true);
+    test_castle!(caslting_4_w_queen, "KQ", w_queen_castle, true);
+    test_castle!(caslting_4_b_king, "KQ", b_king_castle, false);
+    test_castle!(caslting_4_b_queen, "KQ", b_queen_castle, false);
 
-    test_castle!(castling_Kk_w_king, "Kk", w_king_castle, true);
-    test_castle!(castling_Kk_w_queen, "Kk", w_queen_castle, false);
-    test_castle!(castling_Kk_b_king, "Kk", b_king_castle, true);
-    test_castle!(castling_Kk_b_queen, "Kk", b_queen_castle, false);
+    test_castle!(castling_5_w_king, "Kk", w_king_castle, true);
+    test_castle!(castling_5_w_queen, "Kk", w_queen_castle, false);
+    test_castle!(castling_5_b_king, "Kk", b_king_castle, true);
+    test_castle!(castling_5_b_queen, "Kk", b_queen_castle, false);
 
-    test_castle!(castling_Kq_w_king, "Kq", w_king_castle, true);
-    test_castle!(castling_Kq_w_queen, "Kq", w_queen_castle, false);
-    test_castle!(castling_Kq_b_king, "Kq", b_king_castle, false);
-    test_castle!(castling_Kq_b_queen, "Kq", b_queen_castle, true);
+    test_castle!(castling_6_w_king, "Kq", w_king_castle, true);
+    test_castle!(castling_6_w_queen, "Kq", w_queen_castle, false);
+    test_castle!(castling_6_b_king, "Kq", b_king_castle, false);
+    test_castle!(castling_6_b_queen, "Kq", b_queen_castle, true);
 
-    test_castle!(castling_Qk_w_king, "Qk", w_king_castle, false);
-    test_castle!(castling_Qk_w_queen, "Qk", w_queen_castle, true);
-    test_castle!(castling_Qk_b_king, "Qk", b_king_castle, true);
-    test_castle!(castling_Qk_b_queen, "Qk", b_queen_castle, false);
+    test_castle!(castling_7_w_king, "Qk", w_king_castle, false);
+    test_castle!(castling_7_w_queen, "Qk", w_queen_castle, true);
+    test_castle!(castling_7_b_king, "Qk", b_king_castle, true);
+    test_castle!(castling_7_b_queen, "Qk", b_queen_castle, false);
 
-    test_castle!(castling_Qq_w_king, "Qq", w_king_castle, false);
-    test_castle!(castling_Qq_w_queen, "Qq", w_queen_castle, true);
-    test_castle!(castling_Qq_b_king, "Qq", b_king_castle, false);
-    test_castle!(castling_Qq_b_queen, "Qq", b_queen_castle, true);
+    test_castle!(castling_8_w_king, "Qq", w_king_castle, false);
+    test_castle!(castling_8_w_queen, "Qq", w_queen_castle, true);
+    test_castle!(castling_8_b_king, "Qq", b_king_castle, false);
+    test_castle!(castling_8_b_queen, "Qq", b_queen_castle, true);
 
-    test_castle!(castling_qk_w_king, "qk", w_king_castle, false);
-    test_castle!(castling_qk_w_queen, "qk", w_queen_castle, false);
-    test_castle!(castling_qk_b_king, "qk", b_king_castle, true);
-    test_castle!(castling_qk_b_queen, "qk", b_queen_castle, true);
+    test_castle!(castling_9_w_king, "qk", w_king_castle, false);
+    test_castle!(castling_9_w_queen, "qk", w_queen_castle, false);
+    test_castle!(castling_9_b_king, "qk", b_king_castle, true);
+    test_castle!(castling_9_b_queen, "qk", b_queen_castle, true);
 
-    test_castle!(castling_KQk_w_king, "KQk", w_king_castle, true);
-    test_castle!(castling_KQk_w_queen, "KQk", w_queen_castle, true);
-    test_castle!(castling_KQk_b_king, "KQk", b_king_castle, true);
-    test_castle!(castling_KQk_b_queen, "KQk", b_queen_castle, false);
+    test_castle!(castling_10_w_king, "KQk", w_king_castle, true);
+    test_castle!(castling_10_w_queen, "KQk", w_queen_castle, true);
+    test_castle!(castling_10_b_king, "KQk", b_king_castle, true);
+    test_castle!(castling_10_b_queen, "KQk", b_queen_castle, false);
 
-    test_castle!(castling_KQq_w_king, "KQq", w_king_castle, true);
-    test_castle!(castling_KQq_w_queen, "KQq", w_queen_castle, true);
-    test_castle!(castling_KQq_b_king, "KQq", b_king_castle, false);
-    test_castle!(castling_KQq_b_queen, "KQq", b_queen_castle, true);
+    test_castle!(castling_11_w_king, "KQq", w_king_castle, true);
+    test_castle!(castling_11_w_queen, "KQq", w_queen_castle, true);
+    test_castle!(castling_11_b_king, "KQq", b_king_castle, false);
+    test_castle!(castling_11_b_queen, "KQq", b_queen_castle, true);
 
-    test_castle!(castling_Kkq_w_king, "Kkq", w_king_castle, true);
-    test_castle!(castling_Kkq_w_queen, "Kkq", w_queen_castle, false);
-    test_castle!(castling_Kkq_b_king, "Kkq", b_king_castle, true);
-    test_castle!(castling_Kkq_b_queen, "Kkq", b_queen_castle, true);
+    test_castle!(castling_12_w_king, "Kkq", w_king_castle, true);
+    test_castle!(castling_12_w_queen, "Kkq", w_queen_castle, false);
+    test_castle!(castling_12_b_king, "Kkq", b_king_castle, true);
+    test_castle!(castling_12_b_queen, "Kkq", b_queen_castle, true);
 
-    test_castle!(castling_Qkq_w_king, "Qkq", w_king_castle, false);
-    test_castle!(castling_Qkq_w_queen, "Qkq", w_queen_castle, true);
-    test_castle!(castling_Qkq_b_king, "Qkq", b_king_castle, true);
-    test_castle!(castling_Qkq_b_queen, "Qkq", b_queen_castle, true);
+    test_castle!(castling_13_w_king, "Qkq", w_king_castle, false);
+    test_castle!(castling_13_w_queen, "Qkq", w_queen_castle, true);
+    test_castle!(castling_13_b_king, "Qkq", b_king_castle, true);
+    test_castle!(castling_13_b_queen, "Qkq", b_queen_castle, true);
 
-    test_castle!(castling_KQkq_w_king, "KQkq", w_king_castle, true);
-    test_castle!(castling_KQkq_w_queen, "KQkq", w_queen_castle, true);
-    test_castle!(castling_KQkq_b_king, "KQkq", b_king_castle, true);
-    test_castle!(castling_KQkq_b_queen, "KQkq", b_queen_castle, true);
+    test_castle!(castling_14_w_king, "KQkq", w_king_castle, true);
+    test_castle!(castling_14_w_queen, "KQkq", w_queen_castle, true);
+    test_castle!(castling_14_b_king, "KQkq", b_king_castle, true);
+    test_castle!(castling_14_b_queen, "KQkq", b_queen_castle, true);
 
     // Test active color of Position construction
     #[test]
@@ -786,29 +786,29 @@ mod tests {
     }
 
     // Basic movement tests
-    const startpos_b: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1";
+    const STARTPOS_B: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1";
 
     test_play_move!(
         play_startpos_a2a3,
-        startpos,
+        STARTPOS,
         "a2a3",
         "rnbqkbnr/pppppppp/8/8/8/P7/1PPPPPPP/RNBQKBNR b KQkq - 0 1"
     ); // startpos w_pawn advance 1
     test_play_move!(
         play_startpos_a2a4,
-        startpos,
+        STARTPOS,
         "a2a4",
         "rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR b KQkq a3 0 1"
     ); // startpos w_pawn advance 2
     test_play_move!(
         play_startpos_a7a6,
-        startpos_b,
+        STARTPOS_B,
         "a7a6",
         "rnbqkbnr/1ppppppp/p7/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 2"
     ); // startpos b_pawn advance 1
     test_play_move!(
         play_startpos_a7a5,
-        startpos_b,
+        STARTPOS_B,
         "a7a5",
         "rnbqkbnr/1ppppppp/8/p7/8/8/PPPPPPPP/RNBQKBNR w KQkq a6 0 2"
     ); // startpos b_pawn advance 2
@@ -838,13 +838,13 @@ mod tests {
     ); // Random position b_pawn advance 2
     test_play_move!(
         play_startpos_b1c3,
-        startpos,
+        STARTPOS,
         "b1c3",
         "rnbqkbnr/pppppppp/8/8/8/2N5/PPPPPPPP/R1BQKBNR b KQkq - 1 1"
     ); // w_knight initial move
     test_play_move!(
         play_startpos_b8c6,
-        startpos_b,
+        STARTPOS_B,
         "b8c6",
         "r1bqkbnr/pppppppp/2n5/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 1 2"
     ); // b_knight initial move
