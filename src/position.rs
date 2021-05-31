@@ -47,6 +47,55 @@ const B_QUEEN: usize = 11;
 const B_KING: usize = 12;
 const B_PIECES: usize = 13;
 
+// The representation of a 'Move' is a 16-bit integer. This implementation choice
+// is inspired by https://www.chessprogramming.org/Encoding_Moves as well as
+// Stockfish's own move implementation.
+//
+// bit  0- 5: origin square (from 0 to 63)
+// bit  6-11: destination square (from 0 to 63)
+// bit 12-13: promotion piece type - 2 (from KNIGHT-2 to QUEEN-2)
+// bit 14-15: special move flag: promotion (1), en passant (2), castling (3)
+//
+// SPECIAL CASE: To represent pawn double forward moves, the promotion bits will
+// all be set but the special move flag will be 0 (normal move).
+type Move = u16;
+const PROMOTION: u16 = 1u16 << 14;
+const ENPASSANT: u16 = 2u16 << 14;
+const CASTLING: u16 = 3u16 << 14;
+const PAWN_DOUBLE_FWD: u16 = 3u16 << 12;
+const DEST_BITS_OFFSET: usize = 6;
+
+pub fn str_to_move(move_string: &str, position: Position) -> Move {
+    let mut move_bits: Move = 0;
+    let mut move_chars = move_string.chars();
+
+    let start_sq_num = sq_num(move_chars.next().unwrap(), move_chars.next().unwrap());
+    let dest_sq_num = sq_num(move_chars.next().unwrap(), move_chars.next().unwrap());
+    let promotion = move_chars.next();
+    let is_king_move =
+        (position.pieces[W_KING] & position.pieces[B_KING]) & (1u64 << start_sq_num) != 0;
+    let sq_diff = start_sq_num as isize - dest_sq_num as isize;
+
+    move_bits |= start_sq_num as u16;
+    move_bits |= (dest_sq_num as u16) << DEST_BITS_OFFSET;
+
+    if promotion.is_some() {
+        match promotion.unwrap() {
+            'Q' | 'q' => move_bits |= 3 << 12,
+            'R' | 'r' => move_bits |= 2 << 12,
+            'B' | 'b' => move_bits |= 1 << 12,
+            _ => (), // Since knights are 0's, no need to do anything
+        }
+        move_bits |= PROMOTION;
+    } else if 1u64 << dest_sq_num == position.passant_sq {
+        move_bits |= ENPASSANT;
+    } else if is_king_move && sq_diff == 2 {
+        move_bits |= CASTLING;
+    }
+
+    return move_bits;
+}
+
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Position {
     pieces: [u64; 14], // Bitboards
