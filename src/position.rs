@@ -47,23 +47,38 @@ const B_QUEEN: usize = 11;
 const B_KING: usize = 12;
 const B_PIECES: usize = 13;
 
-// The representation of a 'Move' is a 16-bit integer. This implementation choice
-// is inspired by https://www.chessprogramming.org/Encoding_Moves as well as
-// Stockfish's own move implementation.
+// The representation of a 'Move' is a 16-bit integer.
+// This implementation choice is inspired by
+// https://www.chessprogramming.org/Encoding_Moves as well as Stockfish's own move implementation.
 //
+// bit '0' of challenger's Move will represent the least significant bit position.
 // bit  0- 5: origin square (from 0 to 63)
 // bit  6-11: destination square (from 0 to 63)
 // bit 12-13: promotion piece type - 2 (from KNIGHT-2 to QUEEN-2)
 // bit 14-15: special move flag: promotion (1), en passant (2), castling (3)
-//
 // SPECIAL CASE: To represent pawn double forward moves, the promotion bits will
 // all be set but the special move flag will be 0 (normal move).
+
 type Move = u16;
-const PROMOTION: u16 = 1u16 << 14;
-const ENPASSANT: u16 = 2u16 << 14;
-const CASTLING: u16 = 3u16 << 14;
-const PAWN_DOUBLE_FWD: u16 = 3u16 << 12;
-const DEST_BITS_OFFSET: usize = 6;
+const ORIGIN_SQ_BITS: u16 = 0x3F;
+
+const DEST_BITS_OFFSET: u32 = ORIGIN_SQ_BITS.count_ones();
+const DEST_SQ_BITS: u16 = ORIGIN_SQ_BITS << DEST_BITS_OFFSET;
+
+const PROMOTION_PIECE_BITS_OFFSET: u32 = DEST_BITS_OFFSET + DEST_SQ_BITS.count_ones();
+
+const TWO_BITS: u16 = 0x3;
+const PROMOTION_PIECE_BITS: u16 = TWO_BITS << PROMOTION_PIECE_BITS_OFFSET;
+
+const SPECIAL_MOVE_BITS_OFFSET: u32 =
+    PROMOTION_PIECE_BITS_OFFSET + PROMOTION_PIECE_BITS.count_ones();
+const SPECIAL_MOVE_BITS: u16 = TWO_BITS << SPECIAL_MOVE_BITS_OFFSET;
+
+// Special move types
+const PROMOTION: Move = 0x1 << SPECIAL_MOVE_BITS_OFFSET;
+const ENPASSANT: Move = 0x2 << SPECIAL_MOVE_BITS_OFFSET;
+const CASTLING: Move = 0x3 << SPECIAL_MOVE_BITS_OFFSET;
+const PAWN_DOUBLE_FWD: Move = 0x3 << PROMOTION_PIECE_BITS_OFFSET;
 
 pub fn str_to_move(move_string: &str, position: Position) -> Move {
     let mut move_bits: Move = 0;
@@ -226,19 +241,21 @@ impl Position {
     // The focus of the play_move function is speed instead of legality, as challenger
     // has a strictly legal move generator. Moves from stdin could still supply the
     // engine with illegal moves, in which case the engine will gladly play them.
-    pub fn play_move(&mut self, move_string: &str) {
+    pub fn play_move(&mut self, move_bits: Move) {
         // Increment halfmove clock early. Resets will happen based on move played
         self.hlf_clock += 1;
         self.full_num += !self.is_white_move as u8;
+
+        let self_offset: usize = (!self.is_white_move as usize) * 7;
         self.is_white_move = !self.is_white_move;
 
-        let mut move_chars = move_string.chars();
-
-        let start_sq_num = sq_num(move_chars.next().unwrap(), move_chars.next().unwrap());
-        let dest_sq_num = sq_num(move_chars.next().unwrap(), move_chars.next().unwrap());
+        let start_sq_num = move_bits & 0x3F;
+        let dest_sq_num = (move_bits >> 6) & 0x3F;
         let start_square = 1u64 << start_sq_num;
         let dest_square = 1u64 << dest_sq_num;
         let sq_diff = start_sq_num as isize - dest_sq_num as isize;
+
+        let promotion_piece = (move_bits >> 12) & 3;
 
         let moving_bits = start_square | dest_square;
 
@@ -281,15 +298,11 @@ impl Position {
                     self.pieces[moving_piece] |= dest_square;
 
                     // Set the promoted piece
-                    match move_chars.next().unwrap() {
-                        'Q' => self.pieces[W_QUEEN] |= dest_square,
-                        'q' => self.pieces[B_QUEEN] |= dest_square,
-                        'R' => self.pieces[W_ROOK] |= dest_square,
-                        'r' => self.pieces[B_ROOK] |= dest_square,
-                        'N' => self.pieces[W_KNIGHT] |= dest_square,
-                        'n' => self.pieces[B_KNIGHT] |= dest_square,
-                        'B' => self.pieces[W_BISHOP] |= dest_square,
-                        'b' => self.pieces[B_BISHOP] |= dest_square,
+                    match promotion_piece {
+                        3 => self.pieces[W_QUEEN + self_offset] |= dest_square,
+                        2 => self.pieces[W_ROOK + self_offset] |= dest_square,
+                        1 => self.pieces[W_BISHOP + self_offset] |= dest_square,
+                        0 => self.pieces[W_KNIGHT + self_offset] |= dest_square,
                         _ => (),
                     }
                 }
@@ -852,7 +865,8 @@ mod tests {
             fn $test_name() {
                 let mut starting_position = Position::from($starting_position);
                 let expected_position = Position::from($expected);
-                starting_position.play_move($move);
+                let mov = str_to_move($move, starting_position);
+                starting_position.play_move(mov);
                 assert_eq!(starting_position, expected_position);
             }
         };
