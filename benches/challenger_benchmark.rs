@@ -1,73 +1,31 @@
+use challenger_rs::position;
 use challenger_rs::position::Position;
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 
-pub fn play_move_pawn_single_forward(c: &mut Criterion) {
-    let start: Position = Position::new();
-    c.bench_function("play_move_pawn_single_forward", |b| {
-        b.iter(|| {
-            let mut pos = start;
-            pos.play_move("a2a3")
-        })
-    });
-}
-
-pub fn play_move_pawn_double_forward(c: &mut Criterion) {
-    let start: Position = Position::new();
-    c.bench_function("play_move_pawn_double_forward", |b| {
-        b.iter(|| {
-            let mut pos = start;
-            pos.play_move("a2a4")
-        })
-    });
-}
-
-pub fn play_move_w_pawn_promotion(c: &mut Criterion) {
-    let start: Position = Position::from("rnbqkbnr/pPpppppp/8/8/8/8/P1PPPPPP/RNBQKBNR w - - 0 1");
-    c.bench_function("play_move_w_pawn_promotion", |b| {
-        b.iter(|| {
-            let mut pos = start;
-            pos.play_move("b7c8N")
-        })
-    });
-}
-
-pub fn play_move_w_pawn_passant(c: &mut Criterion) {
+// Cheat sheet
+//
+// Save a baseline:
+// 'cargo bench --bench challenger_benchmark -- --save-baseline main'
+//
+// Compare baselines:
+// 'cargo bench --bench challenger_benchmark -- --load-benchmark base_2 --baseline base_1
+pub fn play_moves(c: &mut Criterion) {
     let start: Position =
-        Position::from("rnbqkbnr/pppppp1p/8/5Pp1/8/8/PPPPP1PP/RNBQKBNR w - g6 0 1");
-    c.bench_function("play_move_w_pawn_passant", |b| {
+        Position::from("1nb1k2r/ppppppp1/r4n2/P1bq4/2BQ3p/R4N2/1PPPPPPP/1NB1K2R w - - 0 1");
+    let moves: Vec<u16> = vec![
+        //"g2g4", "h4g3", "f3e5", "b7b5", "a5b6", "f6e4", "e1g1", "e8g8", "c4c6", "c5a3", "d4e4",
+        //"d5e5", "f1d1", "f8d8", "g1g2", "g8f1", "b6c7", "g3f2", "c7b2N", "f2f1n",
+        1934, 34207, 2325, 2161, 35424, 1837, 388, 4028, 2714, 1058, 1819, 2339, 197, 3837, 902,
+        382, 3241, 854, 17010, 16717,
+    ];
+    let bit_moves: Vec<u16> = vec![];
+
+    c.bench_function("play_moves", |b| {
         b.iter(|| {
             let mut pos = start;
-            pos.play_move("f5g6")
-        })
-    });
-}
-
-pub fn play_move_initial_knight(c: &mut Criterion) {
-    let start: Position = Position::new();
-    c.bench_function("play_move_initial_knight", |b| {
-        b.iter(|| {
-            let mut pos = start;
-            pos.play_move("b1c3")
-        })
-    });
-}
-
-pub fn play_move_w_kingside_castle(c: &mut Criterion) {
-    let start: Position = Position::from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQK2R w - - 0 1");
-    c.bench_function("play_move_w_kingside_castle", |b| {
-        b.iter(|| {
-            let mut pos = start;
-            pos.play_move("e1g1")
-        })
-    });
-}
-
-pub fn build_position(c: &mut Criterion) {
-    let start: Position = Position::new();
-    c.bench_function("construct_position", |b| {
-        b.iter(|| {
-            let pos: Position = Position::new();
-            assert_eq!(pos, start);
+            for mov in moves.iter() {
+                pos.play_move(*mov)
+            }
         })
     });
 }
@@ -75,6 +33,6 @@ pub fn build_position(c: &mut Criterion) {
 criterion_group! {
     name = play_move;
     config = Criterion::default().sample_size(300);
-    targets = play_move_pawn_single_forward, play_move_pawn_double_forward, play_move_w_pawn_promotion, play_move_w_pawn_passant, play_move_initial_knight, play_move_w_kingside_castle, build_position
+    targets = play_moves
 }
 criterion_main!(play_move);

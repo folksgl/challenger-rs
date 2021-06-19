@@ -54,10 +54,11 @@ impl Command {
                     skip = 7;
                 }
 
-                tokens
-                    .iter()
-                    .skip(skip)
-                    .for_each(|x| game_state.game_position.play_move(&x));
+                tokens.iter().skip(skip).for_each(|x| {
+                    game_state
+                        .game_position
+                        .play_move(crate::position::str_to_move(&x, game_state.game_position))
+                });
             }
             _ => writeln!(string_buf, "something else").unwrap(),
         }
