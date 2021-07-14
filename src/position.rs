@@ -377,6 +377,178 @@ impl Position {
 
         white_evaluation as isize - black_evaluation as isize
     }
+
+    // Generate moves that can be performed from the current position
+    pub fn moves(self) -> Vec<Move> {
+        return self.generate_knight_moves();
+    }
+
+    fn generate_knight_moves(self) -> Vec<Move> {
+        let mut moves: Vec<Move> = Vec::new();
+
+        let mut knights;
+        let friendly_pieces;
+        if self.is_white_move {
+            knights = self.pieces[W_KNIGHT];
+            friendly_pieces = self.pieces[W_PIECES];
+        } else {
+            knights = self.pieces[B_KNIGHT];
+            friendly_pieces = self.pieces[B_PIECES];
+        };
+
+        // Add knight moves
+        while knights != 0 {
+            let index = knights.trailing_zeros();
+            moves.extend(KNIGHT_MOVES[index as usize].iter());
+            knights ^= 1 << index;
+        }
+
+        moves = moves
+            .into_iter()
+            .filter(|&x| {
+                let dest_sq_index = (x & DEST_SQ_BITS) >> DEST_BITS_OFFSET;
+                let dest_sq = 1u64 << dest_sq_index;
+                dest_sq & friendly_pieces == 0
+            })
+            .collect();
+
+        return moves;
+    }
+}
+
+lazy_static! {
+    static ref KNIGHT_MOVES: Vec<Vec<Move>> = vec![
+        vec![640, 1088,],
+        vec![705, 1025, 1153,],
+        vec![514, 770, 1090, 1218,],
+        vec![579, 835, 1155, 1283,],
+        vec![644, 900, 1220, 1348,],
+        vec![709, 965, 1285, 1413,],
+        vec![774, 1350, 1478,],
+        vec![839, 1415,],
+        vec![136, 1160, 1608,],
+        vec![201, 1225, 1545, 1673,],
+        vec![10, 266, 1034, 1290, 1610, 1738,],
+        vec![75, 331, 1099, 1355, 1675, 1803,],
+        vec![140, 396, 1164, 1420, 1740, 1868,],
+        vec![205, 461, 1229, 1485, 1805, 1933,],
+        vec![270, 1294, 1870, 1998,],
+        vec![335, 1359, 1935,],
+        vec![80, 656, 1680, 2128,],
+        vec![17, 145, 721, 1745, 2065, 2193,],
+        vec![82, 210, 530, 786, 1554, 1810, 2130, 2258,],
+        vec![147, 275, 595, 851, 1619, 1875, 2195, 2323,],
+        vec![212, 340, 660, 916, 1684, 1940, 2260, 2388,],
+        vec![277, 405, 725, 981, 1749, 2005, 2325, 2453,],
+        vec![342, 470, 790, 1814, 2390, 2518,],
+        vec![407, 855, 1879, 2455,],
+        vec![600, 1176, 2200, 2648,],
+        vec![537, 665, 1241, 2265, 2585, 2713,],
+        vec![602, 730, 1050, 1306, 2074, 2330, 2650, 2778,],
+        vec![667, 795, 1115, 1371, 2139, 2395, 2715, 2843,],
+        vec![732, 860, 1180, 1436, 2204, 2460, 2780, 2908,],
+        vec![797, 925, 1245, 1501, 2269, 2525, 2845, 2973,],
+        vec![862, 990, 1310, 2334, 2910, 3038,],
+        vec![927, 1375, 2399, 2911,],
+        vec![1120, 1696, 2720, 3168,],
+        vec![1057, 1185, 1761, 2785, 3105, 3233,],
+        vec![1122, 1250, 1570, 1826, 2594, 2850, 3170, 3298,],
+        vec![1187, 1315, 1635, 1891, 2659, 2915, 3235, 3363,],
+        vec![1252, 1380, 1700, 1956, 2724, 2980, 3300, 3428,],
+        vec![1317, 1445, 1765, 2021, 2789, 3045, 3365, 3493,],
+        vec![1382, 1510, 1830, 2854, 3430, 3558,],
+        vec![1447, 1895, 2919, 3495,],
+        vec![1640, 2216, 3240, 3688,],
+        vec![1577, 1705, 2281, 3305, 3625, 3753,],
+        vec![1642, 1770, 2090, 2346, 3114, 3370, 3690, 3818,],
+        vec![1707, 1835, 2155, 2411, 3179, 3435, 3755, 3883,],
+        vec![1772, 1900, 2220, 2476, 3244, 3500, 3820, 3948,],
+        vec![1837, 1965, 2285, 2541, 3309, 3565, 3885, 4013,],
+        vec![1902, 2030, 2350, 3374, 3950, 4078,],
+        vec![1967, 2415, 3439, 4015,],
+        vec![2160, 2736, 3760,],
+        vec![2097, 2225, 2801, 3825,],
+        vec![2162, 2290, 2610, 2866, 3634, 3890,],
+        vec![2227, 2355, 2675, 2931, 3699, 3955,],
+        vec![2292, 2420, 2740, 2996, 3764, 4020,],
+        vec![2357, 2485, 2805, 3061, 3829, 4085,],
+        vec![2422, 2550, 2870, 3894,],
+        vec![2487, 2935, 3959,],
+        vec![2680, 3256,],
+        vec![2617, 2745, 3321,],
+        vec![2682, 2810, 3130, 3386,],
+        vec![2747, 2875, 3195, 3451,],
+        vec![2812, 2940, 3260, 3516,],
+        vec![2877, 3005, 3325, 3581,],
+        vec![2942, 3070, 3390,],
+        vec![2943, 3455,]
+    ];
+    static ref KING_MOVES: Vec<Vec<Move>> = vec![
+        vec![64, 512, 576,],
+        vec![1, 129, 513, 577, 641,],
+        vec![66, 194, 578, 642, 706,],
+        vec![131, 259, 643, 707, 771,],
+        vec![196, 324, 708, 772, 836,],
+        vec![261, 389, 773, 837, 901,],
+        vec![326, 454, 838, 902, 966,],
+        vec![327, 903, 967,],
+        vec![8, 72, 584, 1032, 1096,],
+        vec![9, 73, 137, 521, 649, 1033, 1097, 1161,],
+        vec![74, 138, 202, 586, 714, 1098, 1162, 1226,],
+        vec![139, 203, 267, 651, 779, 1163, 1227, 1291,],
+        vec![204, 268, 332, 716, 844, 1228, 1292, 1356,],
+        vec![269, 333, 397, 781, 909, 1293, 1357, 1421,],
+        vec![334, 398, 462, 846, 974, 1358, 1422, 1486,],
+        vec![335, 463, 911, 1423, 1487,],
+        vec![528, 592, 1104, 1552, 1616,],
+        vec![529, 593, 657, 1041, 1169, 1553, 1617, 1681,],
+        vec![594, 658, 722, 1106, 1234, 1618, 1682, 1746,],
+        vec![659, 723, 787, 1171, 1299, 1683, 1747, 1811,],
+        vec![724, 788, 852, 1236, 1364, 1748, 1812, 1876,],
+        vec![789, 853, 917, 1301, 1429, 1813, 1877, 1941,],
+        vec![854, 918, 982, 1366, 1494, 1878, 1942, 2006,],
+        vec![919, 983, 1431, 1943, 2007,],
+        vec![1048, 1112, 1624, 2072, 2136,],
+        vec![1049, 1113, 1177, 1561, 1689, 2073, 2137, 2201,],
+        vec![1114, 1178, 1242, 1626, 1754, 2138, 2202, 2266,],
+        vec![1179, 1243, 1307, 1691, 1819, 2203, 2267, 2331,],
+        vec![1244, 1308, 1372, 1756, 1884, 2268, 2332, 2396,],
+        vec![1309, 1373, 1437, 1821, 1949, 2333, 2397, 2461,],
+        vec![1374, 1438, 1502, 1886, 2014, 2398, 2462, 2526,],
+        vec![1439, 1503, 1951, 2463, 2527,],
+        vec![1568, 1632, 2144, 2592, 2656,],
+        vec![1569, 1633, 1697, 2081, 2209, 2593, 2657, 2721,],
+        vec![1634, 1698, 1762, 2146, 2274, 2658, 2722, 2786,],
+        vec![1699, 1763, 1827, 2211, 2339, 2723, 2787, 2851,],
+        vec![1764, 1828, 1892, 2276, 2404, 2788, 2852, 2916,],
+        vec![1829, 1893, 1957, 2341, 2469, 2853, 2917, 2981,],
+        vec![1894, 1958, 2022, 2406, 2534, 2918, 2982, 3046,],
+        vec![1959, 2023, 2471, 2983, 3047,],
+        vec![2088, 2152, 2664, 3112, 3176,],
+        vec![2089, 2153, 2217, 2601, 2729, 3113, 3177, 3241,],
+        vec![2154, 2218, 2282, 2666, 2794, 3178, 3242, 3306,],
+        vec![2219, 2283, 2347, 2731, 2859, 3243, 3307, 3371,],
+        vec![2284, 2348, 2412, 2796, 2924, 3308, 3372, 3436,],
+        vec![2349, 2413, 2477, 2861, 2989, 3373, 3437, 3501,],
+        vec![2414, 2478, 2542, 2926, 3054, 3438, 3502, 3566,],
+        vec![2479, 2543, 2927, 3503, 3567,],
+        vec![2608, 2672, 3184, 3632, 3696,],
+        vec![2609, 2673, 2737, 3121, 3249, 3633, 3697, 3761,],
+        vec![2674, 2738, 2802, 3186, 3314, 3698, 3762, 3826,],
+        vec![2739, 2803, 2867, 3251, 3379, 3763, 3827, 3891,],
+        vec![2804, 2868, 2932, 3316, 3444, 3828, 3892, 3956,],
+        vec![2869, 2933, 2997, 3381, 3509, 3893, 3957, 4021,],
+        vec![2934, 2998, 3062, 3446, 3574, 3958, 4022, 4086,],
+        vec![2999, 3063, 3511, 4023, 4087,],
+        vec![3128, 3192, 3704,],
+        vec![3129, 3193, 3257, 3641, 3769,],
+        vec![3194, 3258, 3322, 3706, 3834,],
+        vec![3259, 3323, 3387, 3771, 3899,],
+        vec![3324, 3388, 3452, 3836, 3964,],
+        vec![3389, 3453, 3517, 3901, 4029,],
+        vec![3454, 3518, 3582, 3966, 4094,],
+        vec![3519, 3583, 4031,],
+    ];
 }
 
 pub fn sq_num(file: char, rank: char) -> u32 {
@@ -439,6 +611,8 @@ mod tests {
     // 'complex_pos' positions are found here: https://www.chessprogramming.org/Perft_Results
     const COMPLEX_POS_2: &str =
         "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
+    const COMPLEX_POS_2_B: &str =
+        "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R b KQkq - 0 1";
 
     test_pieces!(complex2_w_pawn, COMPLEX_POS_2, W_PAWN, 0x81000E700);
     test_pieces!(complex2_w_rook, COMPLEX_POS_2, W_ROOK, 0x81);
@@ -461,6 +635,7 @@ mod tests {
     );
 
     const COMPLEX_POS_3: &str = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1";
+    const COMPLEX_POS_3_B: &str = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 b - - 0 1";
 
     test_pieces!(complex3_w_pawn, COMPLEX_POS_3, W_PAWN, 0x200005000);
     test_pieces!(complex3_w_rook, COMPLEX_POS_3, W_ROOK, 0x2000000);
@@ -478,6 +653,8 @@ mod tests {
     test_pieces!(complex3_b_pieces, COMPLEX_POS_3, B_PIECES, 0x40880A0000000);
 
     const COMPLEX_POS_4: &str = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1";
+    const COMPLEX_POS_4_B: &str =
+        "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 b kq - 0 1";
 
     test_pieces!(complex4_w_pawn, COMPLEX_POS_4, W_PAWN, 0x100021400C900);
     test_pieces!(complex4_w_rook, COMPLEX_POS_4, W_ROOK, 0x21);
@@ -500,6 +677,7 @@ mod tests {
     );
 
     const COMPLEX_POS_5: &str = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
+    const COMPLEX_POS_5_B: &str = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R b KQ - 1 8";
 
     test_pieces!(complex5_w_pawn, COMPLEX_POS_5, W_PAWN, 0x800000000C700);
     test_pieces!(complex5_w_rook, COMPLEX_POS_5, W_ROOK, 0x81);
@@ -533,6 +711,8 @@ mod tests {
 
     const COMPLEX_POS_6: &str =
         "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10";
+    const COMPLEX_POS_6_B: &str =
+        "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 b - - 0 10";
 
     test_pieces!(complex6_w_pawn, COMPLEX_POS_6, W_PAWN, 0x1009E600);
     test_pieces!(complex6_w_rook, COMPLEX_POS_6, W_ROOK, 0x21);
@@ -1143,5 +1323,196 @@ mod tests {
         "rnbqkbnr/p1pppppp/8/8/8/8/PpPPPPPP/RNBQKBNR b - - 0 1",
         "b2c1b",
         "rnbqkbnr/p1pppppp/8/8/8/8/P1PPPPPP/RNbQKBNR w - - 0 2"
+    );
+
+    // Position::play_move() testing
+    macro_rules! test_generate_leapers {
+        ($test_name:ident, $starting_position:expr, $expected:expr) => {
+            #[test]
+            fn $test_name() {
+                let starting_position = Position::from($starting_position);
+                let mut actual = starting_position.generate_knight_moves();
+                actual.sort();
+                let mut expected = $expected;
+                expected.sort();
+                assert_eq!(actual, expected);
+            }
+        };
+    }
+
+    macro_rules! leaper_move {
+        ($origin_sq: expr, $dest_sq: expr) => {
+            ($origin_sq | ($dest_sq << DEST_BITS_OFFSET))
+        };
+    }
+
+    test_generate_leapers!(
+        startpos_leaper_moves,
+        STARTPOS,
+        vec![
+            leaper_move!(1, 16),
+            leaper_move!(1, 18),
+            leaper_move!(6, 21),
+            leaper_move!(6, 23),
+        ]
+    );
+
+    test_generate_leapers!(
+        startpos_b_leaper_moves,
+        STARTPOS_B,
+        vec![
+            leaper_move!(57, 40),
+            leaper_move!(57, 42),
+            leaper_move!(62, 45),
+            leaper_move!(62, 47),
+        ]
+    );
+
+    test_generate_leapers!(
+        complex_2_leaper_moves,
+        COMPLEX_POS_2,
+        vec![
+            leaper_move!(18, 1),
+            leaper_move!(18, 3),
+            leaper_move!(18, 24),
+            leaper_move!(18, 33),
+            leaper_move!(36, 19),
+            leaper_move!(36, 26),
+            leaper_move!(36, 30),
+            leaper_move!(36, 42),
+            leaper_move!(36, 46),
+            leaper_move!(36, 51),
+            leaper_move!(36, 53),
+        ]
+    );
+
+    test_generate_leapers!(
+        complex_2_leaper_moves_b,
+        COMPLEX_POS_2_B,
+        vec![
+            leaper_move!(41, 24),
+            leaper_move!(41, 26),
+            leaper_move!(41, 35),
+            leaper_move!(41, 58),
+            leaper_move!(45, 28),
+            leaper_move!(45, 30),
+            leaper_move!(45, 35),
+            leaper_move!(45, 39),
+            leaper_move!(45, 55),
+            leaper_move!(45, 62),
+        ]
+    );
+
+    test_generate_leapers!(
+        complex_4_leaper_moves,
+        COMPLEX_POS_4,
+        vec![
+            leaper_move!(21, 4),
+            leaper_move!(21, 27),
+            leaper_move!(21, 31),
+            leaper_move!(21, 36),
+            leaper_move!(21, 38),
+            leaper_move!(47, 30),
+            leaper_move!(47, 37),
+            leaper_move!(47, 53),
+            leaper_move!(47, 62),
+        ]
+    );
+    test_generate_leapers!(
+        complex_4_leaper_moves_b,
+        COMPLEX_POS_4_B,
+        vec![
+            leaper_move!(32, 17),
+            leaper_move!(32, 26),
+            leaper_move!(32, 42),
+            leaper_move!(45, 28),
+            leaper_move!(45, 30),
+            leaper_move!(45, 35),
+            leaper_move!(45, 39),
+            leaper_move!(45, 62),
+        ]
+    );
+
+    test_generate_leapers!(
+        complex_5_leaper_moves,
+        COMPLEX_POS_5,
+        vec![
+            leaper_move!(1, 11),
+            leaper_move!(1, 16),
+            leaper_move!(1, 18),
+            leaper_move!(12, 6),
+            leaper_move!(12, 18),
+            leaper_move!(12, 22),
+            leaper_move!(12, 27),
+            leaper_move!(12, 29),
+        ]
+    );
+    test_generate_leapers!(
+        complex_5_leaper_moves_b,
+        COMPLEX_POS_5_B,
+        vec![
+            leaper_move!(13, 3),
+            leaper_move!(13, 7),
+            leaper_move!(13, 19),
+            leaper_move!(13, 23),
+            leaper_move!(13, 28),
+            leaper_move!(13, 30),
+            leaper_move!(57, 40),
+            leaper_move!(57, 51),
+        ]
+    );
+
+    test_generate_leapers!(
+        complex_6_leaper_moves,
+        COMPLEX_POS_6,
+        vec![
+            leaper_move!(18, 1),
+            leaper_move!(18, 3),
+            leaper_move!(18, 8),
+            leaper_move!(18, 24),
+            leaper_move!(18, 33),
+            leaper_move!(18, 35),
+            leaper_move!(21, 4),
+            leaper_move!(21, 11),
+            leaper_move!(21, 27),
+            leaper_move!(21, 31),
+            leaper_move!(21, 36),
+        ]
+    );
+
+    test_generate_leapers!(
+        complex_6_leaper_moves_b,
+        COMPLEX_POS_6_B,
+        vec![
+            leaper_move!(42, 25),
+            leaper_move!(42, 27),
+            leaper_move!(42, 32),
+            leaper_move!(42, 48),
+            leaper_move!(42, 57),
+            leaper_move!(42, 59),
+            leaper_move!(45, 28),
+            leaper_move!(45, 35),
+            leaper_move!(45, 39),
+            leaper_move!(45, 51),
+            leaper_move!(45, 60),
+        ]
+    );
+
+    test_generate_leapers!(
+        leaper_moves_queen_pins_knight,
+        "4k3/8/8/4q3/8/4N3/8/4K3 w KQkq - 0 1",
+        vec![]
+    );
+
+    test_generate_leapers!(
+        leaper_moves_rook_pins_knight,
+        "4k3/8/8/4r3/8/4N3/8/4K3 w KQkq - 0 1",
+        vec![]
+    );
+
+    test_generate_leapers!(
+        leaper_moves_bishop_pins_knight,
+        "4k3/8/8/b7/8/8/3N4/4K3 w KQkq - 0 1",
+        vec![]
     );
 }
