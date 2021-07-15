@@ -5,7 +5,7 @@
 
 Challenger is a [UCI-compliant](http://wbec-ridderkerk.nl/html/UCIProtocol.html)
 chess engine. Challenger-rs is a re-designed version of the 
-[original challenger project](https://github.com/folksgl/challenger), that uses
+[original challenger project](https://github.com/folksgl/challenger) that uses
 Rust and some lessons learned from it's predecessor.
 
 ## Project Goals
@@ -18,9 +18,9 @@ Rust and some lessons learned from it's predecessor.
   - Learn the Rust Programming Language. (done!)
 
 ## Status
-Currently, the project is focused on implementing the uci commands required to
+Currently the project is focused on implementing the uci commands required to
 be a uci-compliant chess engine. This includes writing the move generation
-functions, search capabilities, position evaluation, and making sure challenger
+functions, search capabilities, position evaluation, and ensuring challenger
 can play fully legal chess.
 
 ## How is challenger implemented (FAQ's)
@@ -32,10 +32,9 @@ is a text-based protocol that allows a GUI or other interface to send game comma
 to the engine. 
 
 ### How is the board represented?
-Challenger uses the popular piece-centric board representation:
-[Bitboards](https://www.chessprogramming.org/Bitboards). Using an unsigned,
-64-bit integer, the least significant bit represts A1, and the most significant
-represents H8.
+Challenger uses [Bitboards](https://www.chessprogramming.org/Bitboards), a
+popular piece-centric board representation. Using an unsigned, 64-bit integer,
+the least significant bit represts A1, and the most significant represents H8.
 
 ### How are moves represented?
 Inspired by [from-to based moves](https://www.chessprogramming.org/Encoding_Moves)
